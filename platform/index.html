@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBFAF8">
+<title>Platform overview — Nearby</title>
+<meta name="description" content="Demo: the platform owner's view — every organizer, every event, gross sales, revenue and the money split.">
+<link rel="stylesheet" href="../assets/app.css">
+</head>
+<body>
+<main id="app"></main>
+<div class="toast" id="toast" role="status"></div>
+<script src="../assets/data.js"></script>
+<script src="../assets/dash.js"></script>
+<script>
+  document.getElementById("app").innerHTML = platformView();
+  wireChart("c2", PLATFORM.months, m => `${m.m} — ${$$(m.gmv)} sales · ${$$(m.rev)} your revenue`);
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBFAF8">
+<title>Organizer dashboard — Nearby</title>
+<meta name="description" content="Demo: the organizer product — create, publish, promote, sell, manage and analyse an event.">
+<link rel="stylesheet" href="../assets/app.css">
+</head>
+<body>
+<main id="app"></main>
+<div class="toast" id="toast" role="status"></div>
+<script src="../assets/data.js"></script>
+<script src="../assets/dash.js"></script>
+<script>
+  document.getElementById("app").innerHTML = organizerView();
+  wireChart("c1", SALES, s => `${s.d} — $${s.v.toLocaleString()}`);
+</script>
+</body>
+</html>
