@@ -1,0 +1,1074 @@
+<meta charset="utf-8">
+<title>Mela</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --ink:#2E1A2B; --ink-soft:#5C4356; --muted:#8A6F82;
+    --ground:#FCF7F4; --surface:#FFFFFF; --line:#F0E1DC; --line-strong:#E2CCC5;
+    --rani:#C91E5C; --rani-deep:#A81348; --rani-tint:#FBE9EF;
+    --marigold:#E89B2E; --marigold-deep:#B87413; --marigold-tint:#FBEED8;
+    --peacock:#1E6E62; --peacock-tint:#E2F0ED;
+    --blush:#F8EDE9;
+    --shadow: 0 1px 2px rgba(46,26,43,.06), 0 8px 24px rgba(46,26,43,.08);
+    --shadow-lg: 0 2px 6px rgba(46,26,43,.08), 0 18px 48px rgba(46,26,43,.16);
+    --serif: "Palatino Linotype", Palatino, "Book Antiqua", "URW Palladio L", Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{animation-duration:.01ms !important; transition-duration:.01ms !important} }
+  body{
+    background:var(--ground); color:var(--ink);
+    font-family:var(--sans); font-size:15.5px; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font:inherit; color:inherit; cursor:pointer; background:none; border:none}
+  input{font:inherit; color:inherit}
+  a{color:inherit}
+  :focus-visible{outline:2px solid var(--rani); outline-offset:2px; border-radius:4px}
+  ::placeholder{color:var(--muted)}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:var(--surface);
+    border-bottom:1px solid var(--line);
+  }
+  .hwrap{max-width:1180px; margin:0 auto; padding:0 24px; height:64px; display:flex; align-items:center; gap:20px}
+  .logo{display:flex; align-items:baseline; gap:2px; font-family:var(--serif); font-size:27px; font-weight:700; letter-spacing:.01em; user-select:none}
+  .logo .dot{width:8px; height:8px; border-radius:50%; background:var(--marigold); display:inline-block; transform:translateY(-1px)}
+  .searchbar{
+    flex:1; max-width:430px; display:flex; align-items:center; gap:9px;
+    background:var(--ground); border:1px solid var(--line-strong); border-radius:999px;
+    padding:8px 16px;
+  }
+  .searchbar svg{flex:none; opacity:.55}
+  .searchbar input{border:none; background:none; outline:none; width:100%; font-size:14.5px}
+  .searchbar .city{white-space:nowrap; font-size:13.5px; color:var(--muted); border-left:1px solid var(--line-strong); padding-left:12px}
+  nav{margin-left:auto; display:flex; align-items:center; gap:6px}
+  .navlink{padding:8px 13px; border-radius:999px; font-size:14px; font-weight:500; color:var(--ink-soft); white-space:nowrap}
+  .navlink:hover{background:var(--blush); color:var(--ink)}
+  .navlink.active{color:var(--rani); font-weight:600}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--rani); color:#fff; font-weight:600; font-size:14.5px;
+    padding:10px 20px; border-radius:999px; white-space:nowrap;
+    transition:background .15s;
+  }
+  .btn:hover{background:var(--rani-deep)}
+  .btn.big{font-size:16px; padding:14px 30px}
+  .btn.ghost{background:none; color:var(--rani); border:1.5px solid var(--rani)}
+  .btn.ghost:hover{background:var(--rani-tint)}
+  .btn.quiet{background:var(--blush); color:var(--ink)}
+  .btn.quiet:hover{background:var(--line)}
+  .btn:disabled{opacity:.45; cursor:not-allowed}
+
+  main{max-width:1180px; margin:0 auto; padding:0 24px 90px}
+
+  /* ---------- home ---------- */
+  .hero{padding:58px 0 40px; border-bottom:1px solid var(--line)}
+  .kicker{font-size:12.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--marigold-deep)}
+  .hero h1{
+    font-family:var(--serif); font-weight:700; font-size:clamp(34px,5.4vw,58px);
+    line-height:1.06; letter-spacing:-.01em; margin:14px 0 16px; max-width:15ch; text-wrap:balance;
+  }
+  .hero h1 em{font-style:italic; color:var(--rani)}
+  .hero p{color:var(--ink-soft); font-size:17px; max-width:52ch}
+  .chiprow{display:flex; gap:9px; flex-wrap:wrap; padding:26px 0 6px}
+  .chip{
+    padding:8px 16px; border-radius:999px; border:1px solid var(--line-strong);
+    background:var(--surface); font-size:13.5px; font-weight:500; color:var(--ink-soft);
+    transition:all .12s;
+  }
+  .chip:hover{border-color:var(--rani); color:var(--rani)}
+  .chip.on{background:var(--ink); border-color:var(--ink); color:#fff}
+  .tabsrow{display:flex; gap:22px; padding:26px 0 2px; border-bottom:1px solid var(--line); margin-bottom:26px}
+  .tab{padding:8px 2px 12px; font-size:14.5px; font-weight:500; color:var(--muted); border-bottom:2.5px solid transparent; margin-bottom:-1px}
+  .tab.on{color:var(--ink); font-weight:600; border-color:var(--rani)}
+  .sectionhead{display:flex; align-items:baseline; gap:14px; margin:8px 0 20px}
+  .sectionhead h2{font-family:var(--serif); font-size:26px; font-weight:700}
+  .sectionhead .count{color:var(--muted); font-size:14px}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(258px,1fr)); gap:22px}
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    overflow:hidden; text-align:left; display:flex; flex-direction:column;
+    transition:transform .15s, box-shadow .15s; box-shadow:0 1px 2px rgba(46,26,43,.04);
+  }
+  .card:hover{transform:translateY(-3px); box-shadow:var(--shadow)}
+  .art{position:relative; height:150px; overflow:hidden; flex:none}
+  .art .glyph{
+    position:absolute; right:14px; bottom:-16px;
+    font-family:var(--serif); font-size:110px; font-weight:700; font-style:italic;
+    color:rgba(255,255,255,.28); line-height:1; user-select:none;
+  }
+  .art.tall{height:280px; border-radius:12px}
+  .art.tall .glyph{font-size:200px; right:30px; bottom:-34px}
+  .badge{
+    position:absolute; top:12px; left:12px;
+    background:var(--surface); color:var(--ink); font-size:11.5px; font-weight:700;
+    letter-spacing:.05em; text-transform:uppercase; padding:4px 10px; border-radius:999px;
+    box-shadow:0 1px 4px rgba(46,26,43,.18);
+  }
+  .badge.hot{color:var(--rani)}
+  .badge.free{color:var(--peacock)}
+  .badge.gold{color:var(--marigold-deep)}
+  .cardbody{padding:15px 16px 17px; display:flex; flex-direction:column; gap:5px; flex:1}
+  .cardbody h3{font-size:16.5px; font-weight:650; line-height:1.3}
+  .cdate{color:var(--rani); font-size:13.5px; font-weight:600}
+  .cvenue{color:var(--muted); font-size:13.5px}
+  .cprice{margin-top:auto; padding-top:9px; font-size:14px; font-weight:600}
+  .cprice span{color:var(--muted); font-weight:400}
+
+  /* ---------- event page ---------- */
+  .crumb{padding:22px 0 18px; font-size:13.5px; color:var(--muted)}
+  .crumb button{color:var(--rani); font-weight:600}
+  .eventgrid{display:grid; grid-template-columns:1fr 360px; gap:44px; align-items:start}
+  @media (max-width:900px){ .eventgrid{grid-template-columns:1fr} .rail{position:static !important} }
+  .etitle{font-family:var(--serif); font-size:clamp(28px,3.6vw,40px); font-weight:700; line-height:1.12; margin:26px 0 8px; text-wrap:balance}
+  .esub{color:var(--ink-soft); font-size:16.5px; margin-bottom:22px}
+  .orgcard{
+    display:flex; align-items:center; gap:14px; background:var(--surface);
+    border:1px solid var(--line); border-radius:12px; padding:15px 18px; margin:6px 0 30px;
+  }
+  .avatar{
+    width:46px; height:46px; border-radius:50%; flex:none;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--serif); font-weight:700; font-size:19px; color:#fff;
+  }
+  .orgcard .meta{font-size:13px; color:var(--muted)}
+  .orgcard .name{font-weight:650; font-size:15px; color:var(--ink)}
+  .orgcard .btn{margin-left:auto}
+  .factrow{display:flex; gap:13px; align-items:flex-start; margin:0 0 16px}
+  .factrow svg{flex:none; margin-top:2px; color:var(--rani)}
+  .factrow .f1{font-weight:600}
+  .factrow .f2{color:var(--muted); font-size:14px}
+  .esec{margin:34px 0}
+  .esec h2{font-family:var(--serif); font-size:23px; font-weight:700; margin-bottom:13px}
+  .esec p{max-width:65ch; color:var(--ink-soft); margin-bottom:12px}
+  .hlrow{display:flex; flex-wrap:wrap; gap:9px}
+  .hl{background:var(--blush); border-radius:999px; padding:7px 15px; font-size:13.5px; font-weight:500}
+  .mapbox{
+    height:170px; border-radius:12px; border:1px solid var(--line); position:relative; overflow:hidden;
+    background:
+      linear-gradient(rgba(46,26,43,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(46,26,43,.045) 1px, transparent 1px),
+      linear-gradient(160deg, #F7EFEA, #F1E4DE);
+    background-size:34px 34px, 34px 34px, cover;
+  }
+  .pin{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-100%);
+    width:26px; height:26px; background:var(--rani); border-radius:50% 50% 50% 0;
+    rotate:-45deg; box-shadow:0 3px 8px rgba(46,26,43,.3);
+  }
+  .pin::after{content:""; position:absolute; inset:7px; background:#fff; border-radius:50%}
+  .rail{
+    position:sticky; top:88px;
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:22px; box-shadow:var(--shadow);
+  }
+  .rail .from{font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.09em; font-weight:700}
+  .rail .price{font-family:var(--serif); font-size:32px; font-weight:700; margin:2px 0 4px}
+  .rail .when{color:var(--ink-soft); font-size:14px; margin-bottom:16px}
+  .rail .btn{width:100%}
+  .rail .note{margin-top:13px; font-size:12.5px; color:var(--muted); text-align:center}
+  .urgent{display:flex; align-items:center; gap:8px; margin-top:15px; padding:10px 13px; background:var(--marigold-tint); border-radius:9px; font-size:13.5px; font-weight:550; color:var(--marigold-deep)}
+  .pulse{width:8px; height:8px; border-radius:50%; background:var(--marigold); flex:none; animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  /* ---------- modal ---------- */
+  .overlay{
+    position:fixed; inset:0; z-index:100; background:rgba(46,26,43,.5);
+    display:flex; align-items:center; justify-content:center; padding:18px;
+    animation:fadein .18s;
+  }
+  @keyframes fadein{from{opacity:0}to{opacity:1}}
+  .modal{
+    background:var(--ground); border-radius:16px; width:min(880px,100%);
+    max-height:92vh; display:flex; flex-direction:column; overflow:hidden;
+    box-shadow:var(--shadow-lg); animation:rise .22s ease-out;
+  }
+  @keyframes rise{from{transform:translateY(14px); opacity:.6}to{transform:none; opacity:1}}
+  .mhead{
+    background:var(--surface); border-bottom:1px solid var(--line);
+    padding:15px 22px; display:flex; align-items:center; gap:14px; flex:none;
+  }
+  .mhead .t{font-weight:650; font-size:15.5px}
+  .mhead .d{font-size:13px; color:var(--muted)}
+  .timer{
+    margin-left:auto; display:flex; align-items:center; gap:7px;
+    background:var(--rani-tint); color:var(--rani-deep); font-weight:700; font-size:13.5px;
+    padding:6px 13px; border-radius:999px; font-variant-numeric:tabular-nums;
+  }
+  .xbtn{flex:none; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--muted)}
+  .xbtn:hover{background:var(--blush); color:var(--ink)}
+  .mbody{display:grid; grid-template-columns:1fr 300px; overflow:auto; flex:1}
+  @media (max-width:760px){ .mbody{grid-template-columns:1fr} .summary{border-left:none !important; border-top:1px solid var(--line)} }
+  .tiers{padding:22px}
+  .tier{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:16px 18px; margin-bottom:13px; display:flex; align-items:center; gap:16px;
+  }
+  .tier.off{opacity:.55}
+  .tier .info{flex:1; min-width:0}
+  .tier .tn{font-weight:650; font-size:15.5px}
+  .tier .td{color:var(--muted); font-size:13px; margin-top:2px}
+  .tier .tp{font-weight:700; font-size:15.5px; margin-top:7px}
+  .tier .tp span{font-weight:400; color:var(--muted); font-size:12.5px}
+  .soldtag{font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); border:1px solid var(--line-strong); padding:4px 10px; border-radius:999px}
+  .stepper{display:flex; align-items:center; gap:2px; flex:none}
+  .stepper button{
+    width:34px; height:34px; border-radius:50%; border:1.5px solid var(--rani);
+    color:var(--rani); font-size:19px; font-weight:600; display:flex; align-items:center; justify-content:center;
+  }
+  .stepper button:hover:not(:disabled){background:var(--rani-tint)}
+  .stepper button:disabled{border-color:var(--line-strong); color:var(--line-strong); cursor:not-allowed}
+  .stepper .q{width:34px; text-align:center; font-weight:700; font-size:16px; font-variant-numeric:tabular-nums}
+  .promo{display:flex; gap:9px; margin-top:6px}
+  .promo input{
+    flex:1; border:1px solid var(--line-strong); border-radius:9px; padding:9px 13px;
+    background:var(--surface); outline:none; font-size:14px;
+  }
+  .promo input:focus{border-color:var(--rani)}
+  .promo-ok{color:var(--peacock); font-size:13px; font-weight:600; margin-top:7px}
+  .promo-bad{color:var(--rani); font-size:13px; font-weight:600; margin-top:7px}
+  .summary{
+    background:var(--surface); border-left:1px solid var(--line); padding:22px;
+    display:flex; flex-direction:column;
+  }
+  .thumb{height:92px; border-radius:9px; overflow:hidden; position:relative; margin-bottom:16px}
+  .sline{display:flex; justify-content:space-between; font-size:14px; margin-bottom:9px; gap:12px}
+  .sline .l{color:var(--ink-soft)}
+  .sline.total{font-weight:700; font-size:16.5px; border-top:1px solid var(--line); padding-top:13px; margin-top:6px}
+  .sline .neg{color:var(--peacock); font-weight:600}
+  .summary .btn{margin-top:auto}
+  .sempty{color:var(--muted); font-size:14px; text-align:center; margin:26px 0}
+  .feenote{font-size:12px; color:var(--muted); margin-top:10px; text-align:center}
+
+  /* checkout step */
+  .ckgrid{padding:22px; display:flex; flex-direction:column; gap:20px}
+  .fgroup label{display:block; font-size:13px; font-weight:650; margin-bottom:6px; letter-spacing:.02em}
+  .fgroup input{
+    width:100%; border:1px solid var(--line-strong); border-radius:9px; padding:11px 14px;
+    background:var(--surface); outline:none; font-size:15px; transition:border-color .12s;
+  }
+  .fgroup input:focus{border-color:var(--rani); box-shadow:0 0 0 3px var(--rani-tint)}
+  .fgroup input.err{border-color:var(--rani); background:#FDF3F6}
+  .frow{display:flex; gap:13px}
+  .frow>*{flex:1}
+  .paybox{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px}
+  .paytabs{display:flex; gap:8px; margin-bottom:16px}
+  .paytab{
+    flex:1; border:1.5px solid var(--line-strong); border-radius:9px; padding:9px 6px;
+    font-size:13.5px; font-weight:600; color:var(--muted); display:flex; align-items:center; justify-content:center; gap:7px;
+  }
+  .paytab.on{border-color:var(--rani); color:var(--rani); background:var(--rani-tint)}
+  .cardrow{position:relative}
+  .cardrow .brand{position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:11px; font-weight:800; letter-spacing:.04em; color:var(--muted)}
+  .testhint{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--peacock-tint); border-radius:9px; padding:9px 13px; margin-top:13px; font-size:12.5px; color:var(--peacock);
+  }
+  .testhint button{font-weight:700; color:var(--peacock); text-decoration:underline; white-space:nowrap}
+  .secure{display:flex; align-items:center; gap:7px; justify-content:center; font-size:12px; color:var(--muted); margin-top:11px}
+  .backlink{color:var(--muted); font-size:13.5px; font-weight:600}
+  .backlink:hover{color:var(--ink)}
+  .spinner{width:18px; height:18px; border:2.5px solid rgba(255,255,255,.35); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; flex:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---------- confirmation ---------- */
+  .confwrap{max-width:660px; margin:0 auto; padding-top:44px; text-align:center}
+  .checkring{
+    width:74px; height:74px; margin:0 auto 22px; border-radius:50%;
+    background:var(--peacock); color:#fff; display:flex; align-items:center; justify-content:center;
+    animation:pop .4s cubic-bezier(.3,1.6,.6,1);
+  }
+  @keyframes pop{from{transform:scale(.4); opacity:0}to{transform:none; opacity:1}}
+  .confwrap h1{font-family:var(--serif); font-size:clamp(32px,5vw,46px); font-weight:700; margin-bottom:8px}
+  .confwrap .sub{color:var(--ink-soft); font-size:16.5px; max-width:44ch; margin:0 auto 8px}
+  .ordnum{font-size:13.5px; color:var(--muted); margin-bottom:30px}
+  .ticket{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    box-shadow:var(--shadow); text-align:left; overflow:hidden; margin-bottom:18px;
+  }
+  .tk-top{padding:20px 24px; display:flex; gap:18px; align-items:center}
+  .tk-top .qr{flex:none; border-radius:8px; overflow:hidden; background:#fff; padding:6px; border:1px solid var(--line)}
+  .tk-name{font-weight:700; font-size:17px}
+  .tk-tier{color:var(--rani); font-weight:650; font-size:13.5px; text-transform:uppercase; letter-spacing:.07em; margin:3px 0}
+  .tk-meta{color:var(--muted); font-size:13.5px}
+  .tk-rip{border-top:2px dashed var(--line-strong); position:relative}
+  .tk-rip::before,.tk-rip::after{
+    content:""; position:absolute; top:-9px; width:18px; height:18px; border-radius:50%;
+    background:var(--ground);
+  }
+  .tk-rip::before{left:-10px} .tk-rip::after{right:-10px}
+  .tk-bot{padding:13px 24px; display:flex; align-items:center; gap:10px; justify-content:space-between; font-size:13px; color:var(--muted)}
+  .confbtns{display:flex; gap:12px; justify-content:center; margin:28px 0 12px; flex-wrap:wrap}
+
+  /* ---------- my tickets ---------- */
+  .pagehead{padding:44px 0 10px}
+  .pagehead h1{font-family:var(--serif); font-size:36px; font-weight:700; margin-bottom:6px}
+  .pagehead p{color:var(--ink-soft)}
+  .emptybox{
+    text-align:center; padding:70px 20px; border:1.5px dashed var(--line-strong); border-radius:16px; margin-top:30px;
+  }
+  .emptybox h3{font-family:var(--serif); font-size:22px; margin-bottom:8px}
+  .emptybox p{color:var(--muted); margin-bottom:20px}
+  .order{
+    display:flex; gap:18px; background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:18px 20px; margin-top:18px; align-items:center; flex-wrap:wrap;
+  }
+  .order .oart{width:86px; height:64px; border-radius:9px; overflow:hidden; position:relative; flex:none}
+  .order .oinfo{flex:1; min-width:200px}
+  .order .oname{font-weight:650}
+  .order .ometa{color:var(--muted); font-size:13.5px; margin-top:2px}
+  .order .oamt{font-weight:700; font-variant-numeric:tabular-nums}
+
+  /* ---------- organizer ---------- */
+  .orgtop{display:flex; align-items:center; gap:16px; padding:44px 0 8px; flex-wrap:wrap}
+  .orgtop h1{font-family:var(--serif); font-size:34px; font-weight:700}
+  .livechip{display:flex; align-items:center; gap:7px; background:var(--peacock-tint); color:var(--peacock); font-weight:700; font-size:12.5px; padding:6px 13px; border-radius:999px; letter-spacing:.05em}
+  .livechip .pulse{background:var(--peacock)}
+  .orgsub{color:var(--muted); margin-bottom:26px}
+  .tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:16px; margin-bottom:22px}
+  .tile{background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:17px 19px}
+  .tile .tl{font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:var(--muted)}
+  .tile .tv{font-family:var(--serif); font-size:30px; font-weight:700; margin-top:5px; font-variant-numeric:tabular-nums}
+  .tile .td{font-size:12.5px; color:var(--peacock); font-weight:600; margin-top:3px}
+  .panelrow{display:grid; grid-template-columns:1.6fr 1fr; gap:16px; margin-bottom:16px}
+  @media (max-width:860px){ .panelrow{grid-template-columns:1fr} }
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:13px; padding:19px 21px}
+  .panel h3{font-size:15px; font-weight:650; margin-bottom:2px}
+  .panel .ps{font-size:12.5px; color:var(--muted); margin-bottom:14px}
+  .chart{position:relative}
+  .chart svg{display:block; width:100%; height:auto}
+  .ttip{
+    position:absolute; pointer-events:none; background:var(--ink); color:#fff;
+    font-size:12px; padding:6px 10px; border-radius:7px; white-space:nowrap;
+    transform:translate(-50%,-120%); opacity:0; transition:opacity .1s; font-variant-numeric:tabular-nums;
+  }
+  .tierbar{margin-bottom:13px}
+  .tierbar .tb1{display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:5px}
+  .tierbar .tb1 b{font-variant-numeric:tabular-nums; font-weight:650}
+  .track{height:8px; border-radius:4px; background:var(--blush); overflow:hidden}
+  .fill{height:100%; border-radius:4px; background:var(--rani)}
+  .fill.gold{background:var(--marigold)}
+  .fill.teal{background:var(--peacock)}
+  table{width:100%; border-collapse:collapse; font-size:13.5px}
+  th{text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:700; padding:8px 10px; border-bottom:1px solid var(--line)}
+  td{padding:10px; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:none}
+  .paycard{display:flex; align-items:center; gap:14px; background:linear-gradient(120deg,#3A2140,#2E1A2B); color:#fff; border-radius:13px; padding:19px 21px}
+  .paycard .pv{font-family:var(--serif); font-size:24px; font-weight:700; font-variant-numeric:tabular-nums}
+  .paycard .pl{font-size:12.5px; opacity:.75}
+  .paycard .stripe{margin-left:auto; font-size:12px; opacity:.85; text-align:right; max-width:220px}
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(80px);
+    background:var(--ink); color:#fff; padding:12px 22px; border-radius:999px;
+    font-size:14px; font-weight:500; box-shadow:var(--shadow-lg); z-index:200;
+    transition:transform .25s ease; max-width:90vw; text-align:center;
+  }
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  footer{border-top:1px solid var(--line); margin-top:40px}
+  .fwrap{max-width:1180px; margin:0 auto; padding:26px 24px; display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; color:var(--muted); font-size:13px}
+  .demotag{background:var(--marigold-tint); color:var(--marigold-deep); font-weight:700; font-size:11.5px; letter-spacing:.07em; text-transform:uppercase; padding:4px 11px; border-radius:999px}
+
+  @media (max-width:700px){
+    .hwrap{flex-wrap:wrap; height:auto; padding:10px 14px; row-gap:8px; column-gap:8px}
+    .searchbar{order:3; flex-basis:100%; max-width:none}
+    .searchbar .city{display:none}
+    .navlink{padding:7px 9px; font-size:13.5px}
+    main{padding:0 14px 70px}
+    nav .btn{display:none}
+  }
+</style>
+
+<header>
+  <div class="hwrap">
+    <button class="logo" onclick="go('home')" aria-label="Mela home">Mela<span class="dot"></span></button>
+    <div class="searchbar">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="search" placeholder="Search garba, concerts, comedy…" oninput="onSearch(this.value)" aria-label="Search events">
+      <span class="city">Toronto, ON</span>
+    </div>
+    <nav>
+      <button class="navlink" data-nav="home" onclick="go('home')">Browse</button>
+      <button class="navlink" data-nav="tickets" onclick="go('tickets')">My tickets</button>
+      <button class="navlink" data-nav="organizer" onclick="go('organizer')">Organizer</button>
+      <button class="btn" onclick="go('organizer')">Create event</button>
+    </nav>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer>
+  <div class="fwrap">
+    <span><b style="font-family:var(--serif); font-size:15px; color:var(--ink)">Mela</b> · Where desi events live</span>
+    <span class="demotag">Demo — all events, payments &amp; numbers simulated</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* =============== data =============== */
+const CAT = ["Garba & Dandiya","Concerts","Bollywood Nights","Comedy","Arts & Culture","Festivals & Melas","Community"];
+
+const EVENTS = [
+  {
+    id:"garba-night", title:"Navratri Garba & Dandiya Raas Night 2026",
+    cat:"Garba & Dandiya", badge:{t:"Going fast", k:"hot"}, flags:["weekend"],
+    date:"Sat, Oct 17", time:"7:00 PM – 1:00 AM", doors:"Doors at 6 PM",
+    venue:"Paramount EventSpace", area:"Woodbridge, ON", addr:"222 Rowntree Dairy Rd, Woodbridge, ON L4L 9T2",
+    from:25, art:{a:"#C9256B", b:"#F2A93B", pattern:"bandhani", glyph:"ग"},
+    org:{name:"Rangeela Events", followers:"2.1k", events:14, years:4, attendees:"9,800"},
+    about:[
+      "The GTA's biggest Navratri celebration returns. Live dhol, a full garba orchestra flown in from Vadodara, and 40,000 sq ft of dance floor — bring your dandiya and your best chaniya choli.",
+      "Traditional garba till midnight, then a Bollywood raas-remix hour to close the night. Food stalls by local vendors: dabeli, vada pav, jalebi-fafda and chai all night."
+    ],
+    highlights:["6 hours","In person","Live orchestra","Food stalls","Free parking","All ages"],
+    refund:"Refunds up to 7 days before the event",
+    tiers:[
+      {name:"Early Bird", desc:"First 200 tickets", price:18, sold:true},
+      {name:"General Admission", desc:"Full evening access, garba + raas hours", price:25},
+      {name:"Family Pack (4)", desc:"4 GA tickets — save $20", price:80},
+      {name:"VIP", desc:"Front section, lounge seating, chai & snacks included", price:45},
+    ]
+  },
+  {
+    id:"diwali-mela", title:"Diwali Mela at Exhibition Place",
+    cat:"Festivals & Melas", badge:{t:"Free", k:"free"}, flags:["free"],
+    date:"Sun, Nov 8", time:"12:00 PM – 9:00 PM", doors:"Gates at 11:30 AM",
+    venue:"Exhibition Place, Hall B", area:"Toronto, ON", addr:"100 Princes' Blvd, Toronto, ON M6K 3C3",
+    from:0, art:{a:"#E8862E", b:"#8F1D4E", pattern:"petal", glyph:"द"},
+    org:{name:"Desi Collective TO", followers:"5.4k", events:22, years:6, attendees:"31,000"},
+    about:[
+      "Toronto's largest Diwali bazaar — 120+ stalls of clothes, jewellery, mithai and street food, a fireworks finale over the lake, and performances all day on the main stage.",
+      "Free entry. Reserve your spot so we can plan capacity — VIP seating for the evening show is available."
+    ],
+    highlights:["9 hours","120+ stalls","Fireworks finale","Kids' zone","TTC accessible"],
+    refund:"Free event — no refunds needed",
+    tiers:[
+      {name:"General Entry", desc:"Free — reservation recommended", price:0},
+      {name:"Evening Show VIP", desc:"Reserved seating for the 7 PM show + fireworks", price:20},
+    ]
+  },
+  {
+    id:"bollywood-night", title:"Bollywood Night: Y2K Edition (19+)",
+    cat:"Bollywood Nights", badge:{t:"Almost full", k:"hot"}, flags:["weekend","today"],
+    date:"Sat, Aug 22", time:"10:00 PM – 3:00 AM", doors:"19+ · ID required",
+    venue:"Nest Toronto", area:"Toronto, ON", addr:"423 College St, Toronto, ON M5T 1T1",
+    from:22.9, art:{a:"#7C1E9E", b:"#E23A72", pattern:"jaali", glyph:"♪"},
+    org:{name:"Filmi Fridays", followers:"3.8k", events:41, years:5, attendees:"18,500"},
+    about:[
+      "Every 2000s banger you screamed at your cousin's shaadi — SRK-era classics, item-song hour, and a live dhol set at midnight.",
+      "Dress code: Y2K Bollywood. Best dressed wins a bar tab."
+    ],
+    highlights:["19+","DJ + live dhol","Coat check","Late night"],
+    refund:"No refunds",
+    tiers:[
+      {name:"Early Entry", desc:"Arrive before 11 PM", price:22.9},
+      {name:"General Admission", desc:"All night access", price:29.9},
+      {name:"Booth for 6", desc:"Reserved booth + bottle service credit", price:240},
+    ]
+  },
+  {
+    id:"punjabi-wave", title:"Punjabi Wave: Live in Concert",
+    cat:"Concerts", badge:{t:"Just added", k:"gold"}, flags:[],
+    date:"Fri, Nov 20", time:"8:00 PM – 11:30 PM", doors:"Doors at 7 PM",
+    venue:"Rebel Toronto", area:"Toronto, ON", addr:"11 Polson St, Toronto, ON M5A 1A4",
+    from:59, art:{a:"#1E4FA8", b:"#25B0A5", pattern:"bandhani", glyph:"ਪ"},
+    org:{name:"NorthSide Live", followers:"12k", events:9, years:3, attendees:"42,000"},
+    about:[
+      "A full live band, waterfront views, and the loudest bhangra floor in the city. Openers from Toronto's own Punjabi underground scene.",
+      "VIP includes a meet & greet and early merch access."
+    ],
+    highlights:["Live band","In person","19+ bar","Waterfront venue"],
+    refund:"Refunds up to 30 days before the event",
+    tiers:[
+      {name:"General Admission", desc:"Standing floor", price:59},
+      {name:"Balcony Reserved", desc:"Seated, best sightlines", price:89},
+      {name:"VIP Meet & Greet", desc:"Early entry, meet & greet, merch pack", price:149},
+    ]
+  },
+  {
+    id:"desi-standup", title:"Log Kya Kahenge? — A Desi Stand-Up Night",
+    cat:"Comedy", badge:{t:"Going fast", k:"hot"}, flags:["weekend"],
+    date:"Fri, Sep 11", time:"8:00 PM – 10:30 PM", doors:"Doors at 7:15 PM",
+    venue:"Comedy Bar Danforth", area:"Toronto, ON", addr:"2800 Danforth Ave, Toronto, ON M4C 1M1",
+    from:30, art:{a:"#B3341F", b:"#E8A33D", pattern:"jaali", glyph:"हा"},
+    org:{name:"Brown Noise Comedy", followers:"1.9k", events:28, years:4, attendees:"7,600"},
+    about:[
+      "Six desi comics on one lineup — aunty gossip, arranged-marriage escape stories, and everything your parents pretend didn't happen.",
+      "English / Hindi / Punjabi mix. Two-item minimum applies."
+    ],
+    highlights:["2.5 hours","19+","Full bar","Front-row heckle risk"],
+    refund:"Refunds up to 48 hours before the event",
+    tiers:[
+      {name:"General Seating", desc:"First come, first seated", price:30},
+      {name:"Front Tables (2)", desc:"Reserved table for two up front", price:75},
+    ]
+  },
+  {
+    id:"qawwali-night", title:"Sufi Night: Qawwali Under the Stars",
+    cat:"Arts & Culture", badge:null, flags:[],
+    date:"Sat, Sep 26", time:"7:30 PM – 10:30 PM", doors:"Doors at 6:45 PM",
+    venue:"Aga Khan Museum Courtyard", area:"North York, ON", addr:"77 Wynford Dr, North York, ON M3C 1K1",
+    from:40, art:{a:"#144B63", b:"#C9903B", pattern:"petal", glyph:"ق"},
+    org:{name:"Mehfil Collective", followers:"980", events:11, years:2, attendees:"3,900"},
+    about:[
+      "An open-air mehfil in the museum courtyard — a seven-piece qawwali ensemble performing Nusrat and Sabri Brothers classics as the sun sets.",
+      "Seating on floor cushions and chairs; chai and kebab rolls at intermission."
+    ],
+    highlights:["Open air","3 hours","Chai included","All ages","Museum access"],
+    refund:"Refunds up to 7 days before the event",
+    tiers:[
+      {name:"Floor Cushion", desc:"Traditional mehfil seating", price:40},
+      {name:"Reserved Chair", desc:"Chair seating, rear rows", price:52},
+    ]
+  },
+  {
+    id:"chai-verse", title:"Chai & Verse: South Asian Open Mic",
+    cat:"Community", badge:{t:"Free", k:"free"}, flags:["free","today"],
+    date:"Today", time:"6:30 PM – 9:00 PM", doors:"Sign-up at 6 PM",
+    venue:"Bampot Tea House", area:"Toronto, ON", addr:"201 Harbord St, Toronto, ON M5S 1H6",
+    from:0, art:{a:"#4E6E2E", b:"#C97B3B", pattern:"jaali", glyph:"श"},
+    org:{name:"Kavita Toronto", followers:"640", events:34, years:3, attendees:"2,100"},
+    about:[
+      "Poetry, storytelling and acoustic sets in Urdu, Hindi, Tamil, Bengali, Punjabi and English. Chai on the house for performers.",
+      "Free entry, pay-what-you-can for the space. Sign up to perform when you arrive."
+    ],
+    highlights:["Free","Open mic","Chai included","All ages"],
+    refund:"Free event",
+    tiers:[
+      {name:"Attend", desc:"Free — just reserve", price:0},
+      {name:"Supporter", desc:"Pay-what-you-can to keep the mehfil going", price:12},
+    ]
+  },
+  {
+    id:"kathak-tabla", title:"Kathak & Tabla: An Evening of Classics",
+    cat:"Arts & Culture", badge:null, flags:[],
+    date:"Sun, Oct 4", time:"5:00 PM – 7:30 PM", doors:"Doors at 4:30 PM",
+    venue:"Harbourfront Centre Theatre", area:"Toronto, ON", addr:"231 Queens Quay W, Toronto, ON M5J 2G8",
+    from:35, art:{a:"#8F1D4E", b:"#3B7BC9", pattern:"petal", glyph:"क"},
+    org:{name:"Taal Academy", followers:"1.2k", events:8, years:7, attendees:"5,400"},
+    about:[
+      "A full-length kathak recital with live tabla, sarangi and vocals — three generations of dancers from the Lucknow gharana on one stage.",
+      "Pre-show talk at 4:30 PM on the history of the form."
+    ],
+    highlights:["2.5 hours","Live musicians","Pre-show talk","All ages"],
+    refund:"Refunds up to 14 days before the event",
+    tiers:[
+      {name:"General", desc:"Open seating", price:35},
+      {name:"Premium", desc:"Centre rows, program included", price:55},
+    ]
+  },
+  {
+    id:"cricket-final", title:"IND vs PAK Final — Big Screen Watch Party",
+    cat:"Community", badge:{t:"Almost full", k:"hot"}, flags:["today"],
+    date:"Today", time:"3:30 PM – 8:00 PM", doors:"First ball 4 PM",
+    venue:"The Rec Room Roundhouse", area:"Toronto, ON", addr:"255 Bremner Blvd, Toronto, ON M5V 3M9",
+    from:10, art:{a:"#1E6E62", b:"#E8A33D", pattern:"bandhani", glyph:"६"},
+    org:{name:"GTA Cricket Club", followers:"4.4k", events:19, years:5, attendees:"12,300"},
+    about:[
+      "The final, on a 40-foot screen, with 600 of the loudest fans in the city. Samosa platters, commentary bingo, and an innings-break dance-off.",
+      "Wear your colours. Both sides welcome — barely."
+    ],
+    highlights:["40-ft screen","Food & bar","4.5 hours","All ages till 8"],
+    refund:"No refunds",
+    tiers:[
+      {name:"Standing", desc:"General access", price:10},
+      {name:"Table Seat", desc:"Reserved seat + samosa platter", price:28},
+    ]
+  },
+];
+
+/* fees: modelled on Eventbrite's CA fee card (3.5% + $1.29/ticket + payment proc.) */
+const FEE_PCT = 0.055, FEE_FLAT = 1.29;
+const fee = p => p === 0 ? 0 : p * FEE_PCT + FEE_FLAT;
+const $ = n => "CA$" + n.toFixed(2);
+const money = n => n === 0 ? "Free" : $(n);
+
+/* =============== state =============== */
+const state = {
+  view:"home", eventId:null, cat:"All", tab:"All", q:"",
+  orders: load("mela_orders", []),
+};
+function load(k,d){ try{ return JSON.parse(localStorage.getItem(k)) ?? d }catch(e){ return d } }
+function save(){ try{ localStorage.setItem("mela_orders", JSON.stringify(state.orders)) }catch(e){} }
+
+/* =============== helpers =============== */
+const el = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(msg){
+  const t = el("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove("show"), 2600);
+}
+function artStyle(a, extra=""){
+  const pat = {
+    bandhani:`radial-gradient(circle 3px at 12px 12px, rgba(255,255,255,.35) 2.6px, transparent 3px)`,
+    jaali:`repeating-linear-gradient(45deg, rgba(255,255,255,.13) 0 2px, transparent 2px 14px), repeating-linear-gradient(-45deg, rgba(255,255,255,.13) 0 2px, transparent 2px 14px)`,
+    petal:`radial-gradient(circle 90px at 85% -10%, rgba(255,255,255,.25), transparent 70%), radial-gradient(circle 70px at 10% 110%, rgba(255,255,255,.18), transparent 70%)`,
+  }[a.pattern];
+  const size = a.pattern === "bandhani" ? "background-size:24px 24px, cover;" : "";
+  return `background-image:${pat}, linear-gradient(135deg, ${a.a}, ${a.b}); ${size}${extra}`;
+}
+function artBlock(ev, cls="art"){
+  return `<div class="${cls}" style="${artStyle(ev.art)}" aria-hidden="true"><span class="glyph">${ev.art.glyph}</span>${ev.badge ? `<span class="badge ${ev.badge.k}">${ev.badge.t}</span>`:""}</div>`;
+}
+function navSet(){
+  document.querySelectorAll(".navlink").forEach(b=>{
+    b.classList.toggle("active", b.dataset.nav === state.view || (state.view==="event" && b.dataset.nav==="home"));
+  });
+}
+function go(view, id){
+  state.view = view; if(id) state.eventId = id;
+  render(); window.scrollTo({top:0, behavior:"instant"});
+}
+function onSearch(v){ state.q = v.toLowerCase(); if(state.view!=="home"){state.view="home"} render(); }
+
+/* =============== views =============== */
+function render(){
+  navSet();
+  const app = el("app");
+  if(state.view==="home") app.innerHTML = homeView();
+  else if(state.view==="event") app.innerHTML = eventView();
+  else if(state.view==="tickets") app.innerHTML = ticketsView();
+  else if(state.view==="organizer"){ app.innerHTML = organizerView(); wireChart(); }
+  else if(state.view==="confirm") app.innerHTML = confirmView();
+  if(state.view==="confirm") drawQRs();
+}
+
+function homeView(){
+  let list = EVENTS.filter(e =>
+    (state.cat==="All" || e.cat===state.cat) &&
+    (state.tab==="All" || (state.tab==="Today" && e.flags.includes("today")) || (state.tab==="This weekend" && (e.flags.includes("weekend")||e.flags.includes("today"))) || (state.tab==="Free" && e.flags.includes("free"))) &&
+    (!state.q || (e.title+" "+e.cat+" "+e.venue).toLowerCase().includes(state.q))
+  );
+  return `
+  <section class="hero">
+    <div class="kicker">Toronto · GTA</div>
+    <h1>Every desi event in the city, <em>one place.</em></h1>
+    <p>Garba nights, qawwali, comedy, concerts and melas — discover what's happening, grab tickets in a minute, and never miss the function again.</p>
+    <div class="chiprow" role="tablist" aria-label="Categories">
+      ${["All",...CAT].map(c=>`<button class="chip ${state.cat===c?"on":""}" onclick="state.cat='${c}';render()">${c}</button>`).join("")}
+    </div>
+  </section>
+  <div class="tabsrow">
+    ${["All","Today","This weekend","Free"].map(t=>`<button class="tab ${state.tab===t?"on":""}" onclick="state.tab='${t}';render()">${t}</button>`).join("")}
+  </div>
+  <div class="sectionhead">
+    <h2>${state.q ? "Search results" : state.cat==="All" ? "Happening in Toronto" : state.cat}</h2>
+    <span class="count">${list.length} event${list.length===1?"":"s"}</span>
+  </div>
+  ${list.length ? `<div class="grid">${list.map(cardView).join("")}</div>`
+    : `<div class="emptybox"><h3>Nothing here yet</h3><p>Try another category, or clear your search.</p><button class="btn ghost" onclick="state.q='';state.cat='All';state.tab='All';el('search').value='';render()">Clear filters</button></div>`}
+  `;
+}
+function cardView(e){
+  return `
+  <button class="card" onclick="go('event','${e.id}')" aria-label="${esc(e.title)}">
+    ${artBlock(e)}
+    <div class="cardbody">
+      <h3>${esc(e.title)}</h3>
+      <div class="cdate">${e.date} · ${e.time.split(" – ")[0]}</div>
+      <div class="cvenue">${esc(e.venue)} · ${esc(e.area)}</div>
+      <div class="cprice">${e.from===0 ? `<span style="color:var(--peacock);font-weight:700">Free</span>` : `From ${$(e.from)}`} <span>· ${e.cat}</span></div>
+    </div>
+  </button>`;
+}
+
+const ICONS = {
+  cal:`<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`,
+  pin:`<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg>`,
+  refund:`<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>`,
+  lock:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>`,
+};
+
+function eventView(){
+  const e = EVENTS.find(x=>x.id===state.eventId);
+  if(!e) return homeView();
+  return `
+  <div class="crumb"><button onclick="go('home')">← Back to events</button></div>
+  ${artBlock(e,"art tall")}
+  <div class="eventgrid">
+    <div>
+      <h1 class="etitle">${esc(e.title)}</h1>
+      <p class="esub">${e.about[0].split(".")[0]}.</p>
+      <div class="orgcard">
+        <div class="avatar" style="${artStyle(e.art)}">${esc(e.org.name[0])}</div>
+        <div>
+          <div class="name">${esc(e.org.name)}</div>
+          <div class="meta">${e.org.followers} followers · ${e.org.events} events · ${e.org.years} yrs hosting · ${e.org.attendees} attendees</div>
+        </div>
+        <button class="btn ghost" onclick="toast('Following ${esc(e.org.name)} — you\\'ll hear about their next event first.')">Follow</button>
+      </div>
+      <div class="factrow">${ICONS.cal}<div><div class="f1">${e.date} · ${e.time}</div><div class="f2">${e.doors}</div></div></div>
+      <div class="factrow">${ICONS.pin}<div><div class="f1">${esc(e.venue)}</div><div class="f2">${esc(e.addr)}</div></div></div>
+      <div class="factrow">${ICONS.refund}<div><div class="f1">Refund policy</div><div class="f2">${esc(e.refund)}</div></div></div>
+      <div class="esec"><h2>About this event</h2>${e.about.map(p=>`<p>${esc(p)}</p>`).join("")}</div>
+      <div class="esec"><h2>Good to know</h2><div class="hlrow">${e.highlights.map(h=>`<span class="hl">${esc(h)}</span>`).join("")}</div></div>
+      <div class="esec"><h2>Where you're headed</h2>
+        <div class="mapbox"><div class="pin"></div></div>
+        <p style="margin-top:10px; font-size:13.5px; color:var(--muted)">${esc(e.venue)} · ${esc(e.addr)} <i>(live map in the real build)</i></p>
+      </div>
+    </div>
+    <aside class="rail">
+      <div class="from">${e.from===0?"Admission":"From"}</div>
+      <div class="price">${money(e.from)}</div>
+      <div class="when">${e.date} · ${e.time.split(" – ")[0]}</div>
+      <button class="btn big" onclick="openTickets('${e.id}')">${e.from===0?"Reserve a spot":"Get tickets"}</button>
+      ${e.badge && e.badge.k==="hot" ? `<div class="urgent"><span class="pulse"></span>${e.badge.t === "Almost full" ? "Almost full — only a few tickets left" : "Selling fast — 62 sold in the last day"}</div>`:""}
+      <div class="note">Secure checkout · Instant e-tickets with QR entry</div>
+    </aside>
+  </div>`;
+}
+
+function ticketsView(){
+  return `
+  <div class="pagehead"><h1>My tickets</h1><p>Your upcoming events and receipts, all in one place.</p></div>
+  ${state.orders.length ? state.orders.map(o=>{
+    const e = EVENTS.find(x=>x.id===o.eventId);
+    return `<div class="order">
+      <div class="oart" style="${artStyle(e.art)}"></div>
+      <div class="oinfo">
+        <div class="oname">${esc(e.title)}</div>
+        <div class="ometa">${e.date} · ${esc(e.venue)} · Order ${o.num} · ${o.items.reduce((s,i)=>s+i.qty,0)} ticket(s)</div>
+      </div>
+      <div class="oamt">${o.total===0?"Free":$(o.total)}</div>
+      <button class="btn quiet" onclick="state.lastOrder=state.orders.find(x=>x.num==='${o.num}');go('confirm')">View tickets</button>
+    </div>`;
+  }).join("")
+  : `<div class="emptybox"><h3>No tickets yet</h3><p>When you grab tickets, they'll live here — with QR codes ready at the door.</p><button class="btn" onclick="go('home')">Browse events</button></div>`}
+  `;
+}
+
+function confirmView(){
+  const o = state.lastOrder || state.orders[0];
+  if(!o) return homeView();
+  const e = EVENTS.find(x=>x.id===o.eventId);
+  let ticketNo = 0;
+  return `
+  <div class="confwrap">
+    <div class="checkring"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><path d="m5 12.5 4.5 4.5L19 7"/></svg></div>
+    <h1>You're going!</h1>
+    <p class="sub">${o.items.reduce((s,i)=>s+i.qty,0)} ticket(s) to <b>${esc(e.title)}</b>. A confirmation email with your tickets is on its way to <b>${esc(o.email)}</b>.</p>
+    <div class="ordnum">Order ${o.num} · ${o.total===0 ? "Free order" : "Paid " + $(o.total) + (o.last4 ? " · " + esc(o.cbrand) + " •••• " + esc(o.last4) : "")}</div>
+    ${o.items.map(i => Array.from({length:i.qty}, (_,k) => {
+      ticketNo++;
+      return `<div class="ticket">
+        <div class="tk-top">
+          <div class="qr"><canvas class="qrc" width="84" height="84" data-seed="${o.num}-${ticketNo}"></canvas></div>
+          <div>
+            <div class="tk-name">${esc(e.title)}</div>
+            <div class="tk-tier">${esc(i.name)} — Ticket ${ticketNo}</div>
+            <div class="tk-meta">${e.date} · ${e.time} · ${esc(e.venue)}</div>
+          </div>
+        </div>
+        <div class="tk-rip"></div>
+        <div class="tk-bot">
+          <span>${esc(o.name)}</span>
+          <span>${o.num}-${String(ticketNo).padStart(2,"0")} · Scan at entry</span>
+        </div>
+      </div>`;
+    }).join("")).join("")}
+    <div class="confbtns">
+      <button class="btn quiet" onclick="toast('In the real build this drops the pass into Apple/Google Wallet.')">Add to Wallet</button>
+      <button class="btn quiet" onclick="toast('In the real build this downloads an .ics calendar file.')">Add to calendar</button>
+      <button class="btn ghost" onclick="go('tickets')">My tickets</button>
+      <button class="btn" onclick="go('home')">Keep browsing</button>
+    </div>
+  </div>`;
+}
+
+/* pseudo-QR (deterministic per seed) */
+function drawQRs(){
+  document.querySelectorAll(".qrc").forEach(cv=>{
+    const ctx = cv.getContext("2d"); const n = 21, s = cv.width/n;
+    let h = 2166136261;
+    for(const c of cv.dataset.seed){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) }
+    const rnd = () => { h ^= h<<13; h ^= h>>>17; h ^= h<<5; return (h>>>0)/4294967296 };
+    ctx.fillStyle="#fff"; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.fillStyle="#2E1A2B";
+    for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+      const corner = (x<7&&y<7)||(x>=n-7&&y<7)||(x<7&&y>=n-7);
+      if(corner) continue;
+      if(rnd()>0.52) ctx.fillRect(x*s,y*s,s,s);
+    }
+    const eye=(cx,cy)=>{ ctx.fillRect(cx,cy,7*s,7*s); ctx.fillStyle="#fff"; ctx.fillRect(cx+s,cy+s,5*s,5*s); ctx.fillStyle="#2E1A2B"; ctx.fillRect(cx+2*s,cy+2*s,3*s,3*s); };
+    eye(0,0); eye((n-7)*s,0); eye(0,(n-7)*s);
+  });
+}
+
+/* =============== ticket modal & checkout =============== */
+let cart = null, timerH = null;
+
+function openTickets(id){
+  const e = EVENTS.find(x=>x.id===id);
+  cart = { eventId:id, qty:e.tiers.map(()=>0), promo:null, step:1, secs:600 };
+  renderModal();
+  startTimer();
+}
+function startTimer(){
+  clearInterval(timerH);
+  timerH = setInterval(()=>{
+    if(!cart){ clearInterval(timerH); return }
+    cart.secs--;
+    const t = document.getElementById("timer");
+    if(t) t.textContent = fmtTime(cart.secs);
+    if(cart.secs<=0){ closeModal(); toast("Time's up — your held tickets were released. (Just like the real thing.)") }
+  },1000);
+}
+const fmtTime = s => Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+
+function totals(){
+  const e = EVENTS.find(x=>x.id===cart.eventId);
+  let sub=0, fees=0, count=0;
+  e.tiers.forEach((t,i)=>{ sub += t.price*cart.qty[i]; fees += fee(t.price)*cart.qty[i]; count += cart.qty[i] });
+  let disc = cart.promo==="DESI10" ? sub*0.10 : 0;
+  return { sub, fees, disc, count, total: Math.max(0, sub - disc) + fees };
+}
+
+function renderModal(){
+  const e = EVENTS.find(x=>x.id===cart.eventId);
+  let ov = el("overlay");
+  if(!ov){
+    ov = document.createElement("div"); ov.id="overlay"; ov.className="overlay";
+    ov.addEventListener("click", ev=>{ if(ev.target===ov) closeModal() });
+    document.body.appendChild(ov);
+  }
+  document.body.style.overflow = "hidden";
+  const t = totals();
+  ov.innerHTML = `
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Checkout">
+    <div class="mhead">
+      <div><div class="t">${esc(e.title)}</div><div class="d">${e.date} · ${e.time} · ${esc(e.venue)}</div></div>
+      <div class="timer" title="Tickets are held while you check out">${ICONS.lock} <span id="timer">${fmtTime(cart.secs)}</span></div>
+      <button class="xbtn" onclick="closeModal()" aria-label="Close">✕</button>
+    </div>
+    <div class="mbody">
+      ${cart.step===1 ? tierStep(e,t) : payStep(e,t)}
+      <div class="summary">
+        <div class="thumb" style="${artStyle(e.art)}"></div>
+        ${t.count===0 ? `<div class="sempty">Select tickets to see your order</div>` : `
+          ${e.tiers.map((tr,i)=>cart.qty[i]?`<div class="sline"><span class="l">${cart.qty[i]} × ${esc(tr.name)}</span><span>${tr.price===0?"Free":$(tr.price*cart.qty[i])}</span></div>`:"").join("")}
+          ${t.disc?`<div class="sline"><span class="l">Promo DESI10 (−10%)</span><span class="neg">−${$(t.disc)}</span></div>`:""}
+          ${t.fees?`<div class="sline"><span class="l">Service &amp; processing fees</span><span>${$(t.fees)}</span></div>`:""}
+          <div class="sline total"><span>Total</span><span>${t.total===0?"Free":$(t.total)}</span></div>
+        `}
+        ${cart.step===1
+          ? `<button class="btn big" ${t.count===0?"disabled":""} onclick="cart.step=2;renderModal()">${t.total===0?"Register":"Check out"}</button>`
+          : `<button class="btn big" id="paybtn" onclick="placeOrder()">${t.total===0?"Complete registration":"Pay "+$(t.total)}</button>`}
+        <div class="feenote">${cart.step===1 ? "Fees shown at checkout · Powered by Stripe" : "Simulated payment — no card is charged in this demo"}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function tierStep(e,t){
+  return `<div class="tiers">
+    ${e.tiers.map((tr,i)=>`
+      <div class="tier ${tr.sold?"off":""}">
+        <div class="info">
+          <div class="tn">${esc(tr.name)}</div>
+          <div class="td">${esc(tr.desc)}</div>
+          <div class="tp">${tr.price===0?"Free":$(tr.price)} ${tr.price&&!tr.sold?`<span>+ ${$(fee(tr.price))} fee</span>`:""}</div>
+        </div>
+        ${tr.sold ? `<span class="soldtag">Sold out</span>` : `
+        <div class="stepper">
+          <button onclick="bump(${i},-1)" ${cart.qty[i]===0?"disabled":""} aria-label="Fewer ${esc(tr.name)}">−</button>
+          <span class="q">${cart.qty[i]}</span>
+          <button onclick="bump(${i},1)" ${cart.qty[i]>=8?"disabled":""} aria-label="More ${esc(tr.name)}">+</button>
+        </div>`}
+      </div>`).join("")}
+    <div class="promo">
+      <input id="promoIn" placeholder="Promo code — try DESI10" aria-label="Promo code" onkeydown="if(event.key==='Enter')applyPromo()">
+      <button class="btn ghost" onclick="applyPromo()">Apply</button>
+    </div>
+    <div id="promoMsg">${cart.promo?`<div class="promo-ok">✓ DESI10 applied — 10% off tickets</div>`:""}</div>
+  </div>`;
+}
+
+function payStep(e,t){
+  const free = t.total===0;
+  return `<div class="ckgrid">
+    <button class="backlink" style="text-align:left" onclick="cart.step=1;renderModal()">← Back to tickets</button>
+    <div class="frow">
+      <div class="fgroup"><label for="f_name">Full name</label><input id="f_name" autocomplete="off" placeholder="Priya Sharma"></div>
+      <div class="fgroup"><label for="f_email">Email — tickets go here</label><input id="f_email" autocomplete="off" placeholder="priya@example.com"></div>
+    </div>
+    ${free ? `<p style="font-size:14px;color:var(--muted)">This is a free registration — no payment needed.</p>` : `
+    <div class="paybox">
+      <div class="paytabs">
+        <button class="paytab on">Card</button>
+        <button class="paytab" onclick="toast('Apple Pay / Google Pay would appear here via Stripe in the real build.')">&#63743; Pay</button>
+        <button class="paytab" onclick="toast('Google Pay would appear here via Stripe in the real build.')">G Pay</button>
+      </div>
+      <div class="fgroup cardrow" style="margin-bottom:13px">
+        <label for="f_card">Card number</label>
+        <input id="f_card" inputmode="numeric" autocomplete="off" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)">
+        <span class="brand" id="brand"></span>
+      </div>
+      <div class="frow">
+        <div class="fgroup"><label for="f_exp">Expiry</label><input id="f_exp" inputmode="numeric" autocomplete="off" placeholder="MM / YY" maxlength="7" oninput="fmtExp(this)"></div>
+        <div class="fgroup"><label for="f_cvc">CVC</label><input id="f_cvc" inputmode="numeric" autocomplete="off" placeholder="123" maxlength="4" oninput="this.value=this.value.replace(/\\D/g,'')"></div>
+        <div class="fgroup"><label for="f_zip">Postal code</label><input id="f_zip" autocomplete="off" placeholder="M5V 2T6"></div>
+      </div>
+      <div class="testhint"><span>Demo mode — pay with Stripe's test card: <b>4242 4242 4242 4242</b>, any future expiry, any CVC.</span></div>
+      <div class="secure">${ICONS.lock} Encrypted &amp; secured — the real build never touches card numbers (Stripe handles them)</div>
+    </div>`}
+  </div>`;
+}
+
+function bump(i,d){
+  cart.qty[i] = Math.max(0, Math.min(8, cart.qty[i]+d));
+  renderModal();
+}
+function applyPromo(){
+  const v = (el("promoIn")?.value||"").trim().toUpperCase();
+  if(v==="DESI10"){ cart.promo="DESI10"; renderModal() }
+  else if(v){ el("promoMsg").innerHTML = `<div class="promo-bad">That code isn't valid. (Hint: DESI10)</div>` }
+}
+function fmtCard(inp){
+  let v = inp.value.replace(/\D/g,"").slice(0,16);
+  inp.value = v.replace(/(.{4})/g,"$1 ").trim();
+  el("brand").textContent = v.startsWith("4") ? "VISA" : v.startsWith("5") ? "MC" : v.startsWith("3") ? "AMEX" : "";
+}
+function fmtExp(inp){
+  let v = inp.value.replace(/\D/g,"").slice(0,4);
+  inp.value = v.length>2 ? v.slice(0,2)+" / "+v.slice(2) : v;
+}
+function placeOrder(){
+  const t = totals();
+  const name = el("f_name").value.trim(), email = el("f_email").value.trim();
+  let bad = false;
+  [["f_name",name],["f_email",email && email.includes("@")]].forEach(([id,ok])=>{
+    el(id).classList.toggle("err", !ok); if(!ok) bad=true;
+  });
+  let last4 = "", cbrand = "";
+  if(t.total>0){
+    const card = el("f_card").value.replace(/\s/g,"");
+    [["f_card",card.length===16],["f_exp",el("f_exp").value.length>=6],["f_cvc",el("f_cvc").value.length>=3]].forEach(([id,ok])=>{
+      el(id).classList.toggle("err", !ok); if(!ok) bad=true;
+    });
+    last4 = card.slice(-4);
+    cbrand = card.startsWith("4") ? "Visa" : card.startsWith("5") ? "Mastercard" : card.startsWith("3") ? "Amex" : "Card";
+  }
+  if(bad){ toast("A few details need fixing before we can place the order."); return }
+
+  const btn = el("paybtn");
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span> ${t.total===0?"Registering…":"Processing payment…"}`;
+  setTimeout(()=>{
+    const e = EVENTS.find(x=>x.id===cart.eventId);
+    const num = "MELA-" + String(74211 + state.orders.length * 137);
+    const order = {
+      num, eventId:cart.eventId, name, email, total:t.total, last4, cbrand,
+      items: e.tiers.map((tr,i)=>({name:tr.name, qty:cart.qty[i]})).filter(i=>i.qty>0),
+    };
+    state.orders.unshift(order); state.lastOrder = order; save();
+    closeModal();
+    go("confirm");
+  }, 1900);
+}
+function closeModal(){
+  clearInterval(timerH);
+  el("overlay")?.remove();
+  document.body.style.overflow = "";
+  cart = null;
+}
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeModal() });
+
+/* =============== organizer =============== */
+const SALES = [
+  {d:"Aug 3", v:410},{d:"Aug 4", v:265},{d:"Aug 5", v:190},{d:"Aug 6", v:340},
+  {d:"Aug 7", v:520},{d:"Aug 8", v:780},{d:"Aug 9", v:615},{d:"Aug 10", v:445},
+  {d:"Aug 11", v:380},{d:"Aug 12", v:565},{d:"Aug 13", v:840},{d:"Aug 14", v:1120},
+  {d:"Aug 15", v:1370},{d:"Aug 16", v:925},
+];
+const RECENT = [
+  ["Ananya R.","2 × GA","MELA-74998","2 min ago","CA$55.48"],
+  ["Harpreet S.","4 × Family Pack","MELA-74997","11 min ago","CA$89.69"],
+  ["Zainab K.","1 × VIP","MELA-74996","26 min ago","CA$49.02"],
+  ["Rohan & Meera P.","2 × GA","MELA-74995","41 min ago","CA$55.48"],
+  ["Dilnaz T.","3 × GA","MELA-74994","1 hr ago","CA$83.22"],
+];
+
+function organizerView(){
+  const maxV = Math.max(...SALES.map(s=>s.v));
+  const W=560, H=180, pad=6, bw = (W-pad*2)/SALES.length;
+  const bars = SALES.map((s,i)=>{
+    const h = Math.max(4,(s.v/maxV)*(H-30));
+    const x = pad + i*bw + 2, y = H - h - 20;
+    return `<g class="bar" data-i="${i}">
+      <rect x="${x}" y="${y}" width="${bw-4}" height="${h}" rx="4" fill="${i===SALES.length-1?"var(--marigold)":"var(--rani)"}" opacity="${i===SALES.length-1?1:.88}"/>
+      <rect x="${x-1}" y="0" width="${bw-2}" height="${H-20}" fill="transparent"/>
+    </g>`;
+  }).join("");
+  return `
+  <div class="orgtop">
+    <h1>Navratri Garba &amp; Dandiya Raas Night</h1>
+    <span class="livechip"><span class="pulse"></span>LIVE</span>
+  </div>
+  <p class="orgsub">Organizer dashboard · Rangeela Events · Sales opened Aug 3</p>
+  <div class="tiles">
+    <div class="tile"><div class="tl">Gross sales</div><div class="tv">CA$8,765</div><div class="td">↑ 48% this week</div></div>
+    <div class="tile"><div class="tl">Tickets sold</div><div class="tv">312 <span style="font-size:16px;color:var(--muted)">/ 600</span></div><div class="td">52% of capacity</div></div>
+    <div class="tile"><div class="tl">Page views</div><div class="tv">4,982</div><div class="td">↑ 1,204 since Friday</div></div>
+    <div class="tile"><div class="tl">Conversion</div><div class="tv">6.3%</div><div class="td">Above 4.1% category avg</div></div>
+  </div>
+  <div class="panelrow">
+    <div class="panel">
+      <h3>Daily sales</h3><div class="ps">Last 14 days · gross CAD · hover for detail</div>
+      <div class="chart" id="chart">
+        <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Bar chart of daily gross sales, Aug 3 to 16; sales climb from about CA$400 to a CA$1,370 peak on Aug 15">
+          <line x1="${pad}" y1="${H-20}" x2="${W-pad}" y2="${H-20}" stroke="var(--line-strong)" stroke-width="1"/>
+          ${bars}
+          <text x="${pad+2}" y="${H-5}" font-size="10.5" fill="var(--muted)">Aug 3</text>
+          <text x="${W-pad-2}" y="${H-5}" font-size="10.5" fill="var(--muted)" text-anchor="end">Aug 16</text>
+        </svg>
+        <div class="ttip" id="ttip"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Sales by ticket type</h3><div class="ps">312 sold</div>
+      <div class="tierbar"><div class="tb1"><span>General Admission</span><b>201 / 380</b></div><div class="track"><div class="fill" style="width:53%"></div></div></div>
+      <div class="tierbar"><div class="tb1"><span>Family Pack (4)</span><b>68 / 120</b></div><div class="track"><div class="fill gold" style="width:57%"></div></div></div>
+      <div class="tierbar"><div class="tb1"><span>VIP</span><b>43 / 100</b></div><div class="track"><div class="fill teal" style="width:43%"></div></div></div>
+      <div class="tierbar"><div class="tb1"><span>Early Bird</span><b>Sold out</b></div><div class="track"><div class="fill" style="width:100%; opacity:.35"></div></div></div>
+      <div class="paycard" style="margin-top:18px">
+        <div><div class="pv">CA$7,912</div><div class="pl">Next payout · Tue Aug 18</div></div>
+        <div class="stripe">via <b>Stripe Connect</b> — direct to the organizer's bank, minus platform fee</div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Recent orders</h3><div class="ps">Live feed — refunds and resends are one click in the real build</div>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>Buyer</th><th>Tickets</th><th>Order</th><th>When</th><th style="text-align:right">Total</th></tr></thead>
+      <tbody>${RECENT.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td style="text-align:right">${r[4]}</td></tr>`).join("")}</tbody>
+    </table></div>
+  </div>`;
+}
+function wireChart(){
+  const chart = el("chart"); if(!chart) return;
+  const tip = el("ttip");
+  chart.querySelectorAll(".bar").forEach(g=>{
+    g.addEventListener("mousemove", ev=>{
+      const s = SALES[+g.dataset.i];
+      tip.textContent = `${s.d} — CA$${s.v.toLocaleString()}`;
+      const r = chart.getBoundingClientRect();
+      tip.style.left = (ev.clientX - r.left)+"px";
+      tip.style.top = (ev.clientY - r.top)+"px";
+      tip.style.opacity = 1;
+    });
+    g.addEventListener("mouseleave", ()=>tip.style.opacity=0);
+  });
+}
+
+render();
+</script>
