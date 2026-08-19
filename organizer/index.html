@@ -14,8 +14,11 @@
 <script src="../assets/data.js"></script>
 <script src="../assets/dash.js"></script>
 <script>
-  document.getElementById("app").innerHTML = organizerView();
-  wireChart("c1", SALES, s => `${s.d} — $${s.v.toLocaleString()}`);
+  function mount(){
+    document.getElementById("app").innerHTML = organizerView();
+    wireChart("c1", SALES, s => `${s.d} — $${s.v.toLocaleString()}`);
+  }
+  mount();
 </script>
 </body>
 </html>

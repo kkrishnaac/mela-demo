@@ -14,8 +14,11 @@
 <script src="../assets/data.js"></script>
 <script src="../assets/dash.js"></script>
 <script>
-  document.getElementById("app").innerHTML = platformView();
-  wireChart("c2", PLATFORM.months, m => `${m.m} — ${$$(m.gmv)} sales · ${$$(m.rev)} your revenue`);
+  function mount(){
+    document.getElementById("app").innerHTML = platformView();
+    wireChart("c2", PLATFORM.months, m => `${m.m} — ${$$(m.gmv)} sales · ${$$(m.rev)} your revenue`);
+  }
+  mount();
 </script>
 </body>
 </html>
