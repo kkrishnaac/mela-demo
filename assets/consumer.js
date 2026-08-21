@@ -746,6 +746,7 @@ function placeOrder(){
       last4, brand, status:"confirmed",
       items: e.tiers.map((tr,i)=>({name:tr.name, qty:cart.qty[i]})).filter(x=>x.qty>0)};
     state.orders.unshift(order); state.lastOrder = order; save("ev_orders", state.orders);
+    sendConfirmationEmail(order, e);
     closeSheet(); go("confirm");
   }, 1700);
 }
@@ -816,7 +817,8 @@ function confirmView(){
     </div>`:""}
 
     <div class="confbtns">
-      ${!refunded?`<button class="btn ghost" onclick="toast('Adds the pass to Apple/Google Wallet in the real build')">Add to Wallet</button>
+      ${!refunded?`<button class="btn ghost" onclick="viewEmail('${o.num}')">✉ View confirmation email</button>
+      <button class="btn ghost" onclick="toast('Adds the pass to Apple/Google Wallet in the real build')">Add to Wallet</button>
       <button class="btn ghost" onclick="openRefund('${o.num}')">Cancel &amp; refund</button>`:""}
       <button class="btn" onclick="go('discover')">Keep discovering</button>
     </div>
@@ -879,7 +881,77 @@ function wireVideos(){
   vids.forEach(v=>window._vio.observe(v));
 }
 
+/* ---------- confirmation email (simulated send + viewable copy) ---------- */
+function sendConfirmationEmail(order, e){
+  const inbox = load("ev_inbox", []);
+  inbox.unshift({
+    num: order.num, to: order.email, name: order.name, eventId: order.eventId,
+    subject: `Your ${order.total===0?"reservation":"tickets"} for ${e.title}`,
+    sentLabel: "just now",
+    qty: order.items.reduce((s,i)=>s+i.qty,0), total: order.total,
+    last4: order.last4, brand: order.brand,
+    items: order.items,
+  });
+  save("ev_inbox", inbox);
+}
+async function viewEmail(num){
+  const order = state.orders.find(o=>o.num===num) || state.lastOrder;
+  if(!order) return;
+  const e = byId(order.eventId);
+  const tickets = order.items.reduce((s,i)=>s+i.qty,0);
+  let ov = el("emailov");
+  if(!ov){
+    ov = document.createElement("div"); ov.id="emailov"; ov.className="scrim-full emailwrap";
+    ov.addEventListener("click", ev=>{ if(ev.target===ov) closeEmail() });
+    document.body.appendChild(ov);
+  }
+  document.body.style.overflow="hidden";
+  const firstCode = order.num + "-01";
+  ov.innerHTML = `
+  <div class="email" role="dialog" aria-modal="true" aria-label="Confirmation email">
+    <div class="email-bar">
+      <span class="email-app">✉ Mail</span>
+      <button class="iconbtn" style="width:32px;height:32px" onclick="closeEmail()" aria-label="Close">✕</button>
+    </div>
+    <div class="email-head">
+      <div class="email-subj">${esc(order.total===0?"Your reservation for ":"Your tickets for ")}${esc(e.title)}</div>
+      <div class="email-from">
+        <span class="email-av">N</span>
+        <div><div class="ef-name">Nearby Tickets <span class="ef-addr">&lt;tickets@nearby.app&gt;</span></div>
+          <div class="ef-to">to ${esc(order.email)} · ${esc(order.total===0?"just now":"just now")}</div></div>
+      </div>
+    </div>
+    <div class="email-body">
+      <p>Hi ${esc(order.name.split(" ")[0]||"there")},</p>
+      <p>You're in! ${order.total===0?"Your spot is reserved":"Your payment went through"} and your ${tickets>1?tickets+" tickets are":"ticket is"} attached below as ${tickets>1?"QR passes":"a QR pass"}. Show ${tickets>1?"them":"it"} at the door — the organizer scans ${tickets>1?"each":"it"} on entry.</p>
+      <div class="email-card">
+        <div class="ec-art" style="${art(e)}"><span class="ec-glyph">${e.art.glyph}</span></div>
+        <div class="ec-body">
+          <div class="when">${e.dateShort} · ${e.time}</div>
+          <div class="ec-title">${esc(e.title)}</div>
+          <div class="ec-meta">${esc(e.venue)}, ${esc(e.city)}</div>
+          <div class="ec-meta">${e.timeRange} · ${esc(e.doors)}</div>
+        </div>
+      </div>
+      <div class="email-qr">
+        <canvas class="qrc" data-code="${firstCode}" data-event="${e.id}"></canvas>
+        <div><div class="eq-code">${esc(firstCode)}</div><div class="eq-hint">${tickets>1?"First of "+tickets+" passes — open the app for the rest":"Your entry pass"}</div></div>
+      </div>
+      <table class="email-order">
+        <tr><td>Order</td><td>${esc(order.num)}</td></tr>
+        <tr><td>Tickets</td><td>${order.items.map(i=>i.qty+" × "+esc(i.name)).join("<br>")}</td></tr>
+        <tr><td>${order.total===0?"Total":"Paid"}</td><td>${order.total===0?"Free":"$"+order.total.toFixed(2)+(order.last4?" · "+esc(order.brand)+" ••••"+esc(order.last4):"")}</td></tr>
+      </table>
+      <p class="email-fine">Need to cancel? Open Nearby → My tickets → the refund goes back to your original payment automatically. Questions? Just reply to this email.</p>
+      <div class="email-foot">Nearby · Where local events live · This is a simulated email for the demo.</div>
+    </div>
+  </div>`;
+  await drawQRs();
+}
+function closeEmail(){ el("emailov")?.remove(); document.body.style.overflow=""; }
+
 /* ---------- boot ---------- */
 addEventListener("scroll", ()=>{ el("topbar")?.classList.toggle("stuck", scrollY>6) }, {passive:true});
+if(typeof hydrateSubmissions==="function") hydrateSubmissions();
 if(location.hash){ const id = location.hash.slice(1); if(byId(id)){ state.view="event"; state.eventId=id } }
 render();

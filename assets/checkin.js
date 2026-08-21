@@ -345,5 +345,6 @@ function render(){
 }
 const _render0 = render;
 render = function(){ _render0(); attachCam() };
+if(typeof hydrateSubmissions==="function") hydrateSubmissions();
 if(!Object.keys(scans).length){ scans = {...SEED}; save("ev_checkins", scans) }
 render();

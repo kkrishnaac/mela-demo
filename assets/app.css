@@ -804,3 +804,48 @@ tr:last-child td{border-bottom:none}
 .doorcodebox .dcb-l{font-size:9.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3)}
 .doorcodebox .doorcode{margin:5px auto 6px; display:inline-block}
 .doorcodebox .dcb-h{font-size:10.5px; color:var(--ink-3); line-height:1.4}
+
+/* ---------- organizer offer form ---------- */
+.offergrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.offergrid .field{margin:0}
+.offergrid .field.wide{grid-column:1/-1}
+.offergrid label{display:block;font-size:12.5px;font-weight:650;margin-bottom:5px}
+.offergrid input,.offergrid textarea,.offergrid select{width:100%;border:1.5px solid var(--line-2);border-radius:11px;padding:10px 12px;background:var(--surface);outline:none;font-size:15px;font-family:inherit}
+.offergrid input:focus,.offergrid textarea:focus,.offergrid select:focus{border-color:var(--flame);box-shadow:0 0 0 3px var(--flame-tint)}
+.offergrid textarea{resize:vertical}
+.okmsg{background:var(--teal-tint);color:var(--teal);border-radius:11px;padding:11px 14px;font-size:13.5px;font-weight:600;margin:12px 0;line-height:1.5}
+.okmsg b{color:var(--teal)}
+.qrow.live{border-color:var(--flame);background:var(--flame-tint)}
+@media (max-width:560px){ .offergrid{grid-template-columns:1fr} }
+
+/* ---------- confirmation email ---------- */
+.emailwrap{align-items:flex-start;padding:0;overflow-y:auto}
+.email{background:var(--surface);width:100%;max-width:560px;margin:0 auto;min-height:100%}
+@media (min-width:600px){.email{margin:24px auto;min-height:0;border-radius:16px;overflow:hidden;box-shadow:var(--shadow-2)}}
+.email-bar{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--sunk);border-bottom:1px solid var(--line);z-index:2}
+.email-app{font-weight:800;font-size:14px;letter-spacing:-.01em;color:var(--ink-2)}
+.email-head{padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.email-subj{font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1.25;margin-bottom:14px}
+.email-from{display:flex;gap:11px;align-items:center}
+.email-av{width:38px;height:38px;border-radius:50%;background:var(--flame);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.ef-name{font-weight:700;font-size:14px}
+.ef-addr{font-weight:400;color:var(--ink-3);font-size:12.5px}
+.ef-to{font-size:12.5px;color:var(--ink-3);margin-top:1px}
+.email-body{padding:20px}
+.email-body p{font-size:14.5px;line-height:1.6;color:var(--ink-2);margin-bottom:14px}
+.email-card{display:flex;gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:16px 0}
+.ec-art{width:96px;flex:none;position:relative}
+.ec-glyph{position:absolute;right:6px;bottom:-10px;font-size:52px;font-weight:800;color:rgba(255,255,255,.3)}
+.ec-body{padding:12px 14px;min-width:0}
+.ec-title{font-weight:750;font-size:15px;letter-spacing:-.01em;margin:3px 0}
+.ec-meta{font-size:12.5px;color:var(--ink-3)}
+.email-qr{display:flex;gap:14px;align-items:center;background:var(--sunk);border-radius:14px;padding:14px;margin:16px 0}
+.email-qr canvas{width:96px;height:96px;flex:none;image-rendering:pixelated;background:#fff;border-radius:8px;padding:5px;border:1px solid var(--line)}
+.eq-code{font-family:var(--mono,ui-monospace,monospace);font-weight:800;font-size:14px;letter-spacing:.03em}
+.eq-hint{font-size:12.5px;color:var(--ink-3);margin-top:3px;line-height:1.4}
+.email-order{width:100%;border-collapse:collapse;margin:8px 0 4px;font-size:13.5px}
+.email-order td{padding:8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.email-order td:first-child{color:var(--ink-3);width:78px;font-weight:600}
+.email-order td:last-child{color:var(--ink);font-weight:600}
+.email-fine{font-size:12.5px!important;color:var(--ink-3)!important;margin-top:14px!important}
+.email-foot{font-size:11.5px;color:var(--ink-3);border-top:1px solid var(--line);padding-top:14px;margin-top:16px;line-height:1.5}

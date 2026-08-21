@@ -611,6 +611,7 @@ PLATFORM.collected = PLATFORM.gmv + PLATFORM.serviceFees;
    Canada-wide supply. Free events are auto-sourced from partner
    feeds, then held for human verification before publishing.
    ============================================================ */
+const CAT = ["Food & Drink","Festivals","Markets","Nightlife","Music","Comedy","Arts & Culture","Family","Wellness","Sports","Community"];
 const REGIONS = [
   {prov:"ON", name:"Ontario",          cities:["Toronto","Ottawa","Hamilton","London"]},
   {prov:"BC", name:"British Columbia", cities:["Vancouver","Surrey","Victoria"]},
@@ -1205,3 +1206,75 @@ PLATFORM.incoming = [
   {name:"Aditi Verma",     email:"aditi.v@gmail.com",    phone:"+1 416 ••• 1195", eventId:"garba-night",
    org:"Rangeela Events", city:"Toronto", qty:2, tier:"VIP", face:90, fees:7.53, method:"Apple Pay"},
 ];
+
+/* ============================================================
+   Event submissions — the organizer→owner→publish loop.
+   An organizer "offers" an event; it lands in the owner's queue as
+   pending; on approval it becomes a fully bookable event visible to
+   attendees, scannable at the door, and tracked in the monitor.
+   Shared cross-product state in localStorage (key: ev_submissions).
+   ============================================================ */
+function evLoad(k,d){ try{ return JSON.parse(localStorage.getItem(k)) ?? d }catch(e){ return d } }
+function evSave(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)) }catch(e){} }
+
+const SUB_PALETTES = [["#F0561A","#F2A93B"],["#6B3FD4","#0A9179"],["#D6206B","#F2A93B"],
+  ["#0A9179","#F2A93B"],["#1E4FA8","#6B3FD4"],["#CE2E0F","#6B3FD4"]];
+const SUB_GLYPHS = ["◆","✦","◗","❋","◈","✺","◎","◭","▣","◐"];
+
+/* Turn a compact organizer form into a complete EVENTS-shaped object. */
+function normalizeSubmission(form, seq){
+  const price = Math.max(0, +form.price || 0);
+  const pal = SUB_PALETTES[seq % SUB_PALETTES.length];
+  const doorBase = (form.title||"EVENT").toUpperCase().replace(/[^A-Z]/g,"").slice(0,6) || "EVENT";
+  return {
+    id: "sub-" + form.slug,
+    door: form.door,                       // assigned unique below
+    title: form.title, cat: form.cat || "Community",
+    tags: form.tags || [], city: form.city || "Toronto", prov: form.prov || "ON",
+    dateShort: form.dateShort, date: form.date, time: form.time,
+    timeRange: form.time + (form.endTime ? " – " + form.endTime : ""),
+    doors: form.doors || "Doors 30 min before",
+    venue: form.venue, area: form.area || form.city || "Toronto",
+    addr: form.addr || (form.venue + ", " + (form.city||"Toronto")),
+    km: form.km ?? 5, from: price, interested: form.interested ?? 0,
+    art: {a: pal[0], b: pal[1], glyph: SUB_GLYPHS[seq % SUB_GLYPHS.length]},
+    org: {name: form.org, followers: form.followers || "New", events: 1, years: "<1", attendees: "—"},
+    blurb: form.blurb || (form.title + " — a new event on Nearby."),
+    about: form.about ? [form.about] : [form.title + " at " + form.venue + ". Details from the organizer."],
+    expect: form.expect || [
+      {e:"📅", n:"One event", d:form.dateShort},
+      {e:"📍", n:esc2(form.venue), d:form.city||"Toronto"},
+      {e:"🎟️", n: price===0?"Free entry":"From "+moneyPlain(price), d:"QR ticket at the door"},
+      {e:"✓", n:"Verified", d:"Reviewed before publishing"},
+    ],
+    refund: form.refund || "Refunds up to 48 hours before the event",
+    tiers: (form.tiers && form.tiers.length) ? form.tiers
+      : [ price===0 ? {name:"Free RSVP", desc:"Reserve your spot", price:0}
+                    : {name:"General Admission", desc:"Standard entry", price: price} ],
+    video: false, verified: false, submitted: true,
+  };
+}
+function esc2(s){ return String(s==null?"":s) }
+function moneyPlain(n){ return "$" + (+n).toFixed(2) }
+
+/* Assign a unique door code not already taken by a base event or another sub. */
+function assignDoorCode(title, taken){
+  let base = (title||"EVENT").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,7) || "EVENT";
+  let code = base, i = 1;
+  while(taken.has(code)){ code = base.slice(0,6) + i; i++; }
+  return code;
+}
+
+/* Merge approved submissions into EVENTS so every product treats them
+   identically. Call once after EVENTS is defined, on each product boot. */
+function hydrateSubmissions(){
+  const subs = evLoad("ev_submissions", []);
+  const existing = new Set(EVENTS.map(e=>e.id));
+  subs.filter(s=>s.status==="approved" && s.event && !existing.has(s.event.id))
+      .forEach(s=>{ s.event.verified = true; EVENTS.push(s.event); });
+  // keep CITIES fresh if a submission introduced a new city
+  if(typeof CITIES !== "undefined"){
+    const merged = [...new Set(EVENTS.map(e=>e.city))].sort();
+    CITIES.length = 0; merged.forEach(c=>CITIES.push(c));
+  }
+}

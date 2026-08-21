@@ -88,7 +88,8 @@ function organizerView(){
     <h1>Toronto Summer Food Festival
       ${off?`<span class="livechip warn"><span class="pulse"></span>CANCELLED</span>`
            :`<span class="livechip"><span class="pulse"></span>LIVE</span>`}</h1>
-    <p class="sub">Organizer dashboard — one host managing their own event. A separate product from the consumer app: <b>Create → Publish → Promote → Sell → Manage → Analyse</b>.</p>
+    <p class="sub">Organizer dashboard — one host managing their own event. A separate product from the consumer app: <b>Create → Publish → Promote → Sell → Manage → Analyse</b>.
+      <button class="btn quiet ownerout" onclick="authLogout('organizer')">Log out</button></p>
   </div>
 
   <div class="panel verifypanel">
@@ -175,6 +176,14 @@ function organizerView(){
     <button class="btn ghost" style="margin-top:14px" onclick="toast('The post editor is the next thing to build here.')">Write a new post</button>
   </div>
 
+  <div class="panel" id="offerpanel">
+    <h3>Offer a new event</h3>
+    <div class="ps">Submit an event for the platform owner to review. Approved events publish to attendees automatically and become bookable — with their own QR tickets and door scanner.</div>
+    ${offerForm()}
+  </div>
+
+  ${mySubmissions()}
+
   ${!off?`<div class="panel dangerpanel">
     <h3>Cancel this event</h3>
     <div class="ps">Refunds every ticket holder in full — ticket price <b>and</b> service fees — and reverses your held remittance. This is what your attendees see in the consumer app, so try it and then open the app in another tab.</div>
@@ -229,6 +238,105 @@ function restoreEvent(){
 }
 function closeSheet(){ el("sheet")?.remove(); document.body.style.overflow="" }
 
+/* ---------- organizer: offer an event ---------- */
+function offerForm(){
+  return `
+  <div class="offergrid">
+    <div class="field wide"><label for="of_title">Event name *</label><input id="of_title" placeholder="e.g. Diwali Dhamaka 2026"></div>
+    <div class="field"><label for="of_org">Organizer name *</label><input id="of_org" placeholder="Your org" value="Rangeela Events"></div>
+    <div class="field"><label for="of_cat">Category</label>
+      <select id="of_cat" class="doorsel">${CAT.map(c=>`<option>${esc(c)}</option>`).join("")}</select></div>
+    <div class="field"><label for="of_city">City</label>
+      <select id="of_city" class="doorsel">${CITIES.map(c=>`<option ${c==="Toronto"?"selected":""}>${esc(c)}</option>`).join("")}</select></div>
+    <div class="field"><label for="of_venue">Venue *</label><input id="of_venue" placeholder="e.g. Paramount EventSpace"></div>
+    <div class="field"><label for="of_date">Date *</label><input id="of_date" type="date"></div>
+    <div class="field"><label for="of_time">Start time</label><input id="of_time" type="time" value="19:00"></div>
+    <div class="field"><label for="of_price">Ticket price (CAD, 0 = free)</label><input id="of_price" inputmode="decimal" placeholder="25" value="25"></div>
+    <div class="field wide"><label for="of_blurb">One-line description</label><input id="of_blurb" placeholder="What's the night in a sentence?"></div>
+    <div class="field wide"><label for="of_about">About this event</label><textarea id="of_about" rows="3" placeholder="A paragraph attendees will read."></textarea></div>
+  </div>
+  <div id="offermsg"></div>
+  <button class="btn lg" style="margin-top:6px" onclick="submitOffer()">Submit for approval</button>`;
+}
+function offerFail(m){ el("offermsg").innerHTML = `<div class="autherr" style="text-align:left">${esc(m)}</div>`; }
+function fmtDateShort(iso){
+  if(!iso) return "TB—";
+  const [y,mo,d] = iso.split("-").map(Number);
+  const M=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  const W=["SUN","MON","TUE","WED","THU","FRI","SAT"];
+  const dt = new Date(Date.UTC(y,mo-1,d));
+  return `${W[dt.getUTCDay()]}, ${M[mo-1]} ${d}`;
+}
+function fmtDateLong(iso){
+  if(!iso) return "Date TBC";
+  const [y,mo,d] = iso.split("-").map(Number);
+  const M=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const W=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const dt = new Date(Date.UTC(y,mo-1,d));
+  return `${W[dt.getUTCDay()]}, ${M[mo-1]} ${d}`;
+}
+function fmt12(t){
+  if(!t) return "7:00 PM";
+  let [h,m] = t.split(":").map(Number); const ap = h>=12?"PM":"AM"; h = h%12||12;
+  return `${h}:${String(m).padStart(2,"0")} ${ap}`;
+}
+function submitOffer(){
+  const g = id => (el(id).value||"").trim();
+  const title=g("of_title"), org=g("of_org"), venue=g("of_venue"), date=g("of_date");
+  if(title.length<3) return offerFail("Give the event a name (3+ characters).");
+  if(!org)   return offerFail("Enter the organizer name.");
+  if(!venue) return offerFail("Enter a venue.");
+  if(!date)  return offerFail("Pick a date.");
+  const price = Math.max(0, parseFloat(g("of_price"))||0);
+  const subs = load("ev_submissions", []);
+  const seq = subs.length;
+  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,32) + "-" + (seq+1);
+  const taken = new Set(EVENTS.map(e=>e.door).concat(subs.map(x=>x.event&&x.event.door).filter(Boolean)));
+  const door = assignDoorCode(title, taken);
+  const cat = el("of_cat").value, city = el("of_city").value;
+  const tags = [];
+  if(price===0) tags.push("free");
+  if(/food|festival/i.test(cat)) tags.push("food");
+  if(/music|night|bollywood|concert/i.test(cat)) tags.push("music");
+  if(/comedy/i.test(cat)) tags.push("comedy");
+  if(/festival|mela/i.test(cat)) tags.push("family");
+  const form = {
+    slug, door, title, org, cat, city, prov:"ON", venue,
+    date: fmtDateLong(date), dateShort: fmtDateShort(date), time: fmt12(g("of_time")),
+    blurb: g("of_blurb"), about: g("of_about"), price, tags, interested: 0,
+    followers:"New",
+  };
+  const event = normalizeSubmission(form, seq);
+  subs.unshift({ id:"S"+(70+seq), event, org, title, city, kind: price===0?"Free":"Paid",
+    status:"pending", submittedLabel:"just now" });
+  save("ev_submissions", subs);
+  el("offermsg").innerHTML = `<div class="okmsg">✓ Submitted — now in the platform owner's review queue as <b>${esc(door)}</b>. It publishes to attendees the moment it's approved.</div>`;
+  ["of_title","of_venue","of_blurb","of_about"].forEach(i=>el(i).value="");
+  setTimeout(mountOrg, 1400);
+}
+function mySubmissions(){
+  const subs = load("ev_submissions", []);
+  if(!subs.length) return "";
+  return `<div class="panel">
+    <h3>Your submitted events</h3>
+    <div class="ps">Status updates live as the platform owner reviews them.</div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Event</th><th>Door code</th><th>City</th><th class="num">Price</th><th>Status</th></tr></thead>
+      <tbody>${subs.map(sub=>{
+        const st = sub.status==="approved" ? `<span class="statpill live">Approved &amp; published</span>`
+                 : sub.status==="rejected" ? `<span class="statpill warn">Held for changes</span>`
+                 : `<span class="statpill soon">Pending review</span>`;
+        return `<tr><td class="nm">${esc(sub.title)}</td><td><span class="doorcode sm">${esc(sub.event.door)}</span></td>
+          <td>${esc(sub.city)}</td><td class="num">${sub.event.from===0?"Free":"$"+sub.event.from.toFixed(2)}</td><td>${st}</td></tr>`;
+      }).join("")}</tbody>
+    </table></div>
+  </div>`;
+}
+function mountOrg(){
+  document.getElementById("app").innerHTML = organizerView();
+  wireChart("c1", SALES, s => `${s.d} — $${s.v.toLocaleString()}`);
+}
+
 /* ============ platform owner ============ */
 function platformView(){
   const P = PLATFORM, pc = n => n/P.collected*100;
@@ -244,7 +352,7 @@ function platformView(){
   return `
   <div class="dashtop">
     <h1>Platform overview <span class="livechip"><span class="pulse"></span>LIVE</span>
-      <button class="btn quiet ownerout" onclick="ownerLogout()">Log out</button></h1>
+      <button class="btn quiet ownerout" onclick="authLogout('owner')">Log out</button></h1>
     <p class="sub">Everything across your platform — every organizer, every event, and your cut. Last 6 months (Mar–Aug 2026).</p>
   </div>
   <div class="tiles">
@@ -261,9 +369,21 @@ function platformView(){
       <div><h3>Verification queue</h3>
         <div class="ps">Nothing publishes — free or paid — until a person approves it. ${P.verifyStats.approved} approved this week · median review ${P.verifyStats.medianMins} min</div>
       </div>
-      <div class="qcount"><b>${P.review.length}</b> waiting</div>
+      <div class="qcount"><b>${pendingSubs().length + P.review.length}</b> waiting</div>
     </div>
     <div class="qlist">
+      ${pendingSubs().map(sub=>`
+        <div class="qrow live" id="sub-${sub.id}">
+          <div class="qmain">
+            <div class="qt">${esc(sub.title)} <span class="doorcode sm">${esc(sub.event.door)}</span></div>
+            <div class="qm">${esc(sub.org)} · ${esc(sub.city)} · ${sub.kind} · submitted ${esc(sub.submittedLabel)}</div>
+            <div class="qflag ok">▲ Submitted by an organizer — awaiting your decision</div>
+          </div>
+          <div class="qacts">
+            <button class="btn quiet" onclick="decideSub('${sub.id}','reject')">Hold</button>
+            <button class="btn" onclick="decideSub('${sub.id}','approve')">Approve &amp; publish</button>
+          </div>
+        </div>`).join("")}
       ${P.review.map((r,i)=>`
         <div class="qrow" id="q${i}">
           <div class="qmain">
@@ -364,6 +484,20 @@ function platformView(){
     </table></div>
   </div>
   ${switcher("platform")}`;
+}
+function pendingSubs(){ return load("ev_submissions", []).filter(x=>x.status==="pending"); }
+function decideSub(id, action){
+  const subs = load("ev_submissions", []);
+  const sub = subs.find(x=>x.id===id); if(!sub) return;
+  sub.status = action==="approve" ? "approved" : "rejected";
+  save("ev_submissions", subs);
+  if(action==="approve"){
+    hydrateSubmissions();
+    toast("Approved — " + sub.title + " is now live for attendees");
+  } else {
+    toast("Held — the organizer is notified to make changes");
+  }
+  mount();
 }
 function decide(i, action){
   const row = el("q"+i); if(!row) return;
@@ -578,6 +712,74 @@ async function pwHash(salt, pw){
   const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(salt + "|" + pw));
   return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join("");
 }
+const ROLES = {
+  owner: {key:"ev_owner", sess:"ev_owner_session", mount:"mount",
+    setup:"Set up owner access", signin:"Owner sign in",
+    blurb:"Choose the username and password you'll use to open the platform dashboard. This is the demo of your locked owner portal.",
+    restricted:"This portal is restricted to the platform owner."},
+  organizer: {key:"ev_org", sess:"ev_org_session", mount:"mountOrg",
+    setup:"Set up organizer access", signin:"Organizer sign in",
+    blurb:"Choose the username and password for your organizer account. From here you offer events for approval and manage the ones you're running.",
+    restricted:"Sign in to your organizer account."},
+};
+function gate(role){
+  const R = ROLES[role];
+  if(sessionStorage.getItem(R.sess) === "1"){ window[R.mount](); return }
+  const creds = load(R.key, null);
+  el("app").innerHTML = authView(role, creds);
+  setTimeout(()=>{ el("au")?.focus() }, 50);
+}
+function authView(role, creds){
+  const R = ROLES[role];
+  return `
+  <div class="authwrap">
+    <div class="authcard">
+      <div class="brandmark" style="margin:0 auto 18px; justify-content:center"><span class="ring"></span>Nearby</div>
+      ${creds ? `
+        <h1>${R.signin}</h1>
+        <p class="authsub">${R.restricted}</p>
+        <div class="field"><label for="au">Username</label><input id="au" autocomplete="username" autocapitalize="none"></div>
+        <div class="field"><label for="ap">Password</label><input id="ap" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')authLogin('${role}')"></div>
+        <div id="autherr" class="autherr"></div>
+        <button class="btn block lg" id="authbtn" onclick="authLogin('${role}')">Sign in</button>
+        <button class="authreset" onclick="authReset('${role}')">Forgot it? Reset access (demo)</button>`
+      : `
+        <h1>${R.setup}</h1>
+        <p class="authsub">${R.blurb}</p>
+        <div class="field"><label for="au">Choose a username</label><input id="au" autocomplete="username" autocapitalize="none" placeholder="e.g. ${role}"></div>
+        <div class="field"><label for="ap">Choose a password</label><input id="ap" type="password" autocomplete="new-password" placeholder="6+ characters"></div>
+        <div class="field"><label for="ap2">Confirm password</label><input id="ap2" type="password" autocomplete="new-password" onkeydown="if(event.key==='Enter')authCreate('${role}')"></div>
+        <div id="autherr" class="autherr"></div>
+        <button class="btn block lg" id="authbtn" onclick="authCreate('${role}')">Create &amp; continue</button>`}
+      <div class="authnote">Demo authentication — stored only in this browser. The real build uses server-side accounts.</div>
+    </div>
+  </div>`;
+}
+async function authCreate(role){
+  const R = ROLES[role];
+  const u = el("au").value.trim(), p = el("ap").value, p2 = el("ap2").value;
+  if(u.length < 3) return authFail("Username needs at least 3 characters.");
+  if(p.length < 6) return authFail("Password needs at least 6 characters.");
+  if(p !== p2)     return authFail("Passwords don't match.");
+  const salt = [...crypto.getRandomValues(new Uint8Array(8))].map(b=>b.toString(16).padStart(2,"0")).join("");
+  save(R.key, {u, salt, hash: await pwHash(salt, p)});
+  sessionStorage.setItem(R.sess,"1");
+  window[R.mount](); toast("Access created — you're in");
+}
+async function authLogin(role){
+  const R = ROLES[role];
+  const creds = load(R.key, null);
+  if(!creds){ gate(role); return }
+  const u = el("au").value.trim(), p = el("ap").value;
+  const btn = el("authbtn"); btn.disabled = true; btn.textContent = "Checking…";
+  const ok = u === creds.u && (await pwHash(creds.salt, p)) === creds.hash;
+  if(!ok){ btn.disabled = false; btn.textContent = "Sign in"; return authFail("Wrong username or password.") }
+  sessionStorage.setItem(R.sess,"1");
+  window[R.mount](); toast("Welcome back");
+}
+function authLogout(role){ sessionStorage.removeItem(ROLES[role].sess); gate(role); toast("Signed out"); }
+function authReset(role){ localStorage.removeItem(ROLES[role].key); sessionStorage.removeItem(ROLES[role].sess); gate(role); toast("Access reset — choose new credentials"); }
+
 function ownerGate(){
   if(sessionStorage.getItem("ev_owner_session") === "1"){ mount(); return }
   const creds = load("ev_owner", null);
