@@ -461,6 +461,7 @@ main{max-width:1240px; margin:0 auto; padding-bottom:calc(var(--tabh) + 34px)}
 .dashtop .sub{color:var(--ink-3); font-size:13.5px; margin:6px 0 20px; max-width:70ch}
 .livechip{display:inline-flex; align-items:center; gap:6px; background:var(--teal-tint); color:var(--teal);
   font-weight:800; font-size:11px; letter-spacing:.08em; padding:5px 11px; border-radius:8px}
+.livechip.warn{background:var(--flame-tint); color:var(--flame-deep)}
 .pulse{width:7px; height:7px; border-radius:50%; background:currentColor; animation:pulse 1.7s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .tiles{display:grid; grid-template-columns:1fr 1fr; gap:11px; padding:0 16px}
