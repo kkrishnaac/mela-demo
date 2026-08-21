@@ -238,7 +238,8 @@ function platformView(){
   const S = P.sourcing;
   return `
   <div class="dashtop">
-    <h1>Platform overview <span class="livechip"><span class="pulse"></span>LIVE</span></h1>
+    <h1>Platform overview <span class="livechip"><span class="pulse"></span>LIVE</span>
+      <button class="btn quiet ownerout" onclick="ownerLogout()">Log out</button></h1>
     <p class="sub">Everything across your platform — every organizer, every event, and your cut. Last 6 months (Mar–Aug 2026).</p>
   </div>
   <div class="tiles">
@@ -559,4 +560,78 @@ function openBuyer(num){
       </div>
     </div>
   </div>`;
+}
+
+/* ============ platform owner access (demo auth) ============
+   The owner chooses a username + password on first visit; after that the
+   portal requires login. Client-side only — demo-grade. The real build
+   uses proper server-side auth with sessions and 2FA.                  */
+async function pwHash(salt, pw){
+  const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(salt + "|" + pw));
+  return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+function ownerGate(){
+  if(sessionStorage.getItem("ev_owner_session") === "1"){ mount(); return }
+  const creds = load("ev_owner", null);
+  el("app").innerHTML = ownerAuthView(creds);
+  setTimeout(()=>{ el("au")?.focus() }, 50);
+}
+function ownerAuthView(creds){
+  return `
+  <div class="authwrap">
+    <div class="authcard">
+      <div class="brandmark" style="margin:0 auto 18px; justify-content:center"><span class="ring"></span>Nearby</div>
+      ${creds ? `
+        <h1>Owner sign in</h1>
+        <p class="authsub">This portal is restricted to the platform owner.</p>
+        <div class="field"><label for="au">Username</label><input id="au" autocomplete="username" autocapitalize="none"></div>
+        <div class="field"><label for="ap">Password</label><input id="ap" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')ownerLogin()"></div>
+        <div id="autherr" class="autherr"></div>
+        <button class="btn block lg" id="authbtn" onclick="ownerLogin()">Sign in</button>
+        <button class="authreset" onclick="ownerReset()">Forgot it? Reset owner access (demo)</button>`
+      : `
+        <h1>Set up owner access</h1>
+        <p class="authsub">Choose the username and password you'll use to open the platform dashboard. This is the demo of your locked owner portal.</p>
+        <div class="field"><label for="au">Choose a username</label><input id="au" autocomplete="username" autocapitalize="none" placeholder="e.g. owner"></div>
+        <div class="field"><label for="ap">Choose a password</label><input id="ap" type="password" autocomplete="new-password" placeholder="6+ characters"></div>
+        <div class="field"><label for="ap2">Confirm password</label><input id="ap2" type="password" autocomplete="new-password" onkeydown="if(event.key==='Enter')ownerCreate()"></div>
+        <div id="autherr" class="autherr"></div>
+        <button class="btn block lg" id="authbtn" onclick="ownerCreate()">Create &amp; open dashboard</button>`}
+      <div class="authnote">Demo authentication — stored only in this browser. The real build uses server-side accounts.</div>
+    </div>
+  </div>`;
+}
+function authFail(msg){
+  const e = el("autherr"); e.textContent = msg;
+  ["au","ap","ap2"].forEach(id=>el(id)?.classList.add("bad"));
+  setTimeout(()=>["au","ap","ap2"].forEach(id=>el(id)?.classList.remove("bad")), 1200);
+}
+async function ownerCreate(){
+  const u = el("au").value.trim(), p = el("ap").value, p2 = el("ap2").value;
+  if(u.length < 3) return authFail("Username needs at least 3 characters.");
+  if(p.length < 6) return authFail("Password needs at least 6 characters.");
+  if(p !== p2)     return authFail("Passwords don't match.");
+  const salt = [...crypto.getRandomValues(new Uint8Array(8))].map(b=>b.toString(16).padStart(2,"0")).join("");
+  save("ev_owner", {u, salt, hash: await pwHash(salt, p)});
+  sessionStorage.setItem("ev_owner_session","1");
+  mount(); toast("Owner access created — you're in");
+}
+async function ownerLogin(){
+  const creds = load("ev_owner", null);
+  if(!creds){ ownerGate(); return }
+  const u = el("au").value.trim(), p = el("ap").value;
+  const btn = el("authbtn"); btn.disabled = true; btn.textContent = "Checking…";
+  const ok = u === creds.u && (await pwHash(creds.salt, p)) === creds.hash;
+  if(!ok){ btn.disabled = false; btn.textContent = "Sign in"; return authFail("Wrong username or password.") }
+  sessionStorage.setItem("ev_owner_session","1");
+  mount(); toast("Welcome back");
+}
+function ownerLogout(){
+  sessionStorage.removeItem("ev_owner_session");
+  ownerGate(); toast("Signed out");
+}
+function ownerReset(){
+  localStorage.removeItem("ev_owner");
+  sessionStorage.removeItem("ev_owner_session");
+  ownerGate(); toast("Owner access reset — choose new credentials");
 }

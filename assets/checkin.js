@@ -33,6 +33,90 @@ const QUEUE = [
 ];
 let qi = 0;
 
+/* ---------- camera scanning (real QR, any phone) ---------- */
+let camStream = null, camLoop = null, camErr = null, cooldownUntil = 0, scanBusy = false;
+const workCv = document.createElement("canvas");
+const workCtx = workCv.getContext("2d", {willReadFrequently:true});
+
+async function startCam(){
+  camErr = null;
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    camErr = "This browser can't open the camera. Use manual entry below."; render(); return;
+  }
+  try{
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:{ideal:"environment"}, width:{ideal:1280}}, audio:false});
+  }catch(err){
+    camErr = err && (err.name==="NotAllowedError"||err.name==="SecurityError")
+      ? "Camera permission was declined. Allow camera access for this site, or use manual entry."
+      : "Couldn't start the camera ("+ (err&&err.name||"error") +"). Use manual entry below.";
+    render(); return;
+  }
+  last = null; render(); attachCam();
+  camLoop = requestAnimationFrame(camTick);
+}
+function attachCam(){
+  const v = el("camvid");
+  if(v && camStream && v.srcObject !== camStream){ v.srcObject = camStream; v.play().catch(()=>{}) }
+}
+function stopCam(){
+  if(camLoop) cancelAnimationFrame(camLoop);
+  if(camStream) camStream.getTracks().forEach(t=>t.stop());
+  camStream = null; camLoop = null; render();
+}
+async function camTick(){
+  if(!camStream) return;
+  camLoop = requestAnimationFrame(camTick);
+  const v = el("camvid");
+  if(!v || v.readyState < 2 || scanBusy || performance.now() < cooldownUntil) return;
+  const w = 360, h = Math.max(120, Math.round(w * v.videoHeight / (v.videoWidth||1)));
+  workCv.width = w; workCv.height = h;
+  workCtx.drawImage(v, 0, 0, w, h);
+  const img = workCtx.getImageData(0, 0, w, h);
+  const hit = jsQR(img.data, w, h, {inversionAttempts:"dontInvert"});
+  if(hit && hit.data && hit.data.trim()){
+    scanBusy = true;
+    const res = await verifyScan(hit.data);
+    last = res; scanBusy = false;
+    cooldownUntil = performance.now() + 2600;
+    render(); attachCam();
+    if(navigator.vibrate) navigator.vibrate(res.kind==="ok" ? 40 : [50,70,50]);
+  }
+}
+
+/* Verify either a signed QR payload (NBY1.event.code.sig — works for tickets
+   bought on ANY phone) or a bare ticket code (manual entry / same device). */
+async function verifyScan(text){
+  const t = String(text||"").trim();
+  if(t.startsWith(TICKET_PROTO + ".")){
+    const p = await ticketParse(t);
+    if(!p) return {kind:"invalid", code:t.slice(0,28), msg:"Unreadable ticket.",
+      detail:"The QR is in the ticket format but malformed. Do not admit."};
+    if(!p.sigOk) return {kind:"invalid", code:p.code, msg:"Forged or altered ticket.",
+      detail:"The security signature does not match. Do not admit."};
+    const local = lookup(p.code);
+    if(local && local.refunded) return {kind:"void", code:p.code, t:local, msg:"Ticket was refunded.",
+      detail:"This order was cancelled and the money returned. Do not admit."};
+    if(cancelled().includes(p.eventId)) return {kind:"void", code:p.code, msg:"Event was cancelled.",
+      detail:"All ticket holders were refunded in full."};
+    if(p.eventId !== doorEvent){
+      const other = EVENTS.find(e=>e.id===p.eventId), here = EVENTS.find(e=>e.id===doorEvent);
+      return {kind:"wrong", code:p.code, msg:"Valid ticket — wrong event.",
+        detail:`Genuine pass, but for ${other?other.title:"a different event"}. This scanner is assigned to ${here?here.title:"another event"}.`};
+    }
+    const prior = scans[p.code];
+    if(prior) return {kind:"dupe", code:p.code, t:local, msg:"Already checked in.",
+      detail:`First scanned at ${prior.at}. Someone has used this pass already — likely a screenshot.`};
+    scans[p.code] = {at:nowTime(), event:p.eventId};
+    save("ev_checkins", scans);
+    return {kind:"ok", code:p.code, t:local, msg:"Checked in.",
+      detail:"Signature verified for this event — pass is genuine and now used. Admit."};
+  }
+  if(t.toUpperCase().includes("NBY1")) return {kind:"invalid", code:t.slice(0,28),
+    msg:"Unreadable ticket.", detail:"Partial payload — rescan the QR. Do not admit."};
+  return verify(t);
+}
+
 function ticketsFor(evId){
   /* real orders bought on this device */
   const rows = [];
@@ -93,7 +177,7 @@ function verify(code){
 function scan(code){
   if(busy) return;
   busy = true; render();
-  setTimeout(()=>{ last = verify(code); busy = false; render();
+  setTimeout(async ()=>{ last = await verifyScan(code); busy = false; render();
     if(navigator.vibrate) navigator.vibrate(last.kind==="ok"?30:[40,60,40]);
   }, 620);
 }
@@ -118,7 +202,8 @@ function toast(m){
 function render(){
   const ev = EVENTS.find(e=>e.id===doorEvent) || EVENTS[0];
   const inDoor = Object.entries(scans).filter(([,v])=>v.event===doorEvent).length;
-  const sold = doorEvent==="food-fest" ? 1842 : 312;
+  const SOLD = {"food-fest":1842, "garba-night":312};
+  const sold = SOLD[doorEvent] || Math.max(ticketsFor(doorEvent).length + inDoor, Math.round((ev.interested||500)*0.35));
   const mine = ticketsFor(doorEvent).filter(t=>!t.refunded);
   const K = last ? last.kind : null;
   el("app").innerHTML = `
@@ -133,18 +218,26 @@ function render(){
     </div>
 
     <div class="ckdoorsel">
-      <span class="rslabel" style="margin:0 8px 0 0">Scanning door for</span>
-      ${["food-fest","garba-night"].map(id=>{
-        const e = EVENTS.find(x=>x.id===id);
-        return `<button class="chip${doorEvent===id?" on":""}" onclick="setDoor('${id}')">${esc(e.title.split(":")[0])}</button>`;
-      }).join("")}
+      <label class="rslabel" for="doorsel" style="margin:0">Scanner assigned to</label>
+      <select id="doorsel" class="doorsel" onchange="setDoor(this.value)">
+        ${EVENTS.filter(e=>e.verified).map(e=>
+          `<option value="${e.id}" ${doorEvent===e.id?"selected":""}>${esc(e.title)} — ${e.date}, ${esc(e.city)}</option>`).join("")}
+      </select>
+      <div class="ps" style="margin:6px 0 0">Only a QR issued for <b>this</b> event turns the light green — everything else is turned away.</div>
     </div>
 
     <div class="scanner ${K||""} ${busy?"busy":""}">
-      <div class="viewfinder">
+      <div class="viewfinder${camStream?" camon":""}">
+        ${camStream?`<video id="camvid" playsinline muted autoplay></video>`:""}
         <span class="corner tl"></span><span class="corner tr"></span>
         <span class="corner bl"></span><span class="corner br"></span>
-        ${busy?`<div class="scanline"></div><div class="scantext">Reading QR…</div>`
+        ${camStream
+          ? (last ? `<div class="camverdict ${K}">
+                <b>${K==="ok"?"✓ ADMIT":"✕ DO NOT ADMIT"}</b>
+                <span>${esc(last.msg)}${last.t&&last.t.name?" · "+esc(last.t.name):""} · ${esc(last.code)}</span>
+              </div>`
+            : `<div class="camhint">Point at a ticket QR</div>`)
+          : busy?`<div class="scanline"></div><div class="scantext">Reading QR…</div>`
           : last ? `<div class="verdict">
               <div class="vicon">${K==="ok"?"✓":K==="dupe"?"!":K==="wrong"?"⇄":"✕"}</div>
               <div class="vmsg">${esc(last.msg)}</div>
@@ -152,14 +245,19 @@ function render(){
               <div class="vcode">${esc(last.code)}</div>
             </div>`
           : `<div class="scanidle"><div class="scanico">▣</div>
-              <div>Point the camera at a ticket QR</div>
-              <div class="scanhint">Camera feed appears here in the real app</div></div>`}
+              <div>Scan a real ticket QR with the camera</div>
+              <div class="scanhint">Tap “Scan with camera” below — works on any phone</div></div>`}
       </div>
-      ${last?`<div class="verdictbar"><b>${K==="ok"?"ADMIT":"DO NOT ADMIT"}</b> — ${esc(last.detail)}</div>`:""}
+      ${last && !camStream?`<div class="verdictbar"><b>${K==="ok"?"ADMIT":"DO NOT ADMIT"}</b> — ${esc(last.detail)}</div>`:""}
+      ${last && camStream?`<div class="verdictbar">${esc(last.detail)}</div>`:""}
     </div>
 
     <div class="ckactions">
-      <button class="btn block lg" onclick="simulate()" ${busy?"disabled":""}>Simulate next guest</button>
+      ${camStream
+        ? `<button class="btn block lg dark" onclick="stopCam()">Stop camera</button>`
+        : `<button class="btn block lg" onclick="startCam()">📷 Scan with camera</button>`}
+      ${camErr?`<div class="warnbox" style="margin-top:10px">${esc(camErr)}</div>`:""}
+      <button class="btn block quiet" style="margin-top:10px" onclick="simulate()" ${busy?"disabled":""}>Simulate next guest</button>
       <div class="manualrow">
         <input id="mcode" placeholder="Or type a ticket code — e.g. NB-48210-01"
           aria-label="Ticket code" onkeydown="if(event.key==='Enter')manual()">
@@ -206,5 +304,7 @@ function render(){
     </div>
   </div>`;
 }
+const _render0 = render;
+render = function(){ _render0(); attachCam() };
 if(!Object.keys(scans).length){ scans = {...SEED}; save("ev_checkins", scans) }
 render();

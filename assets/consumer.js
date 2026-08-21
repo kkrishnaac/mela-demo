@@ -172,7 +172,9 @@ function card(e, wide){
 function reel(e){
   return `
   <button class="reel" onclick="go('event','${e.id}')" aria-label="${esc(e.title)} — watch clip">
-    <div class="reelmedia" style="${art(e)}"></div><div class="scrim"></div>
+    <div class="reelmedia" style="${art(e)}"></div>
+    <video class="reelvid" src="assets/vibes/${e.id}.mp4" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+    <div class="scrim"></div>
     <span class="reelplay">${I.play}</span><span class="reellen">${e.vlen}</span>
     <div class="reelinfo">
       <div class="rt">${esc(e.title)}</div>
@@ -257,6 +259,7 @@ function render(){
              blogs:blogsView, blog:blogView}[state.view];
   el("app").innerHTML = v();
   el("tabbar").innerHTML = tabbar();
+  wireVideos();
   if(state.view==="confirm") drawQRs();
   if(state.view==="search"){ const i=el("qin"); if(i && !state._nf) i.focus(); state._nf=false }
 }
@@ -523,7 +526,7 @@ function eventView(){
   </div>
   <div class="dhero" style="${art(e)}">
     <span class="glyph" aria-hidden="true">${e.art.glyph}</span>
-    ${e.video?`<span class="heroplay">${I.play}</span>`:""}
+    ${e.video?`<video class="herovid" src="assets/vibes/${e.id}.mp4" muted loop playsinline preload="metadata" aria-hidden="true" tabindex="-1"></video>`:""}
     <div class="vibe">
       ${e.trending?`<span class="tagpill flame">🔥 Trending</span>`:""}
       ${e.video?`<span class="tagpill solid">▶ ${e.vlen} clip</span>`:""}
@@ -765,7 +768,7 @@ function confirmView(){
     ${refunded ? `
       <div class="tick grey">↩︎</div>
       <h1>Refunded</h1>
-      <p class="csub"><b>${$(o.refundAmount)}</b> is on its way back to your ${o.last4?esc(o.brand)+" ••••"+esc(o.last4):"payment method"}. ${esc(o.refundReason)}.</p>
+      <p class="csub"><b>${$(o.refundAmount ?? o.total)}</b> is on its way back to your ${o.last4?esc(o.brand)+" ••••"+esc(o.last4):"payment method"}. ${esc(o.refundReason || "Order refunded")}.</p>
       <div class="cord">Order ${o.num} · Refunded through Stripe · 5–10 business days</div>`
     : st==="event_cancelled" ? `
       <div class="tick warn">!</div>
@@ -784,7 +787,10 @@ function confirmView(){
       const code = `${o.num}-${String(n).padStart(2,"0")}`;
       return `<div class="pass${refunded?" void":""}">
         <div class="passtop">
-          <div class="qr"><canvas class="qrc" width="78" height="78" data-seed="${code}"></canvas></div>
+          <button class="qr" onclick="showPass('${code}','${e.id}')" aria-label="Show ticket ${code} full screen">
+            <canvas class="qrc" data-code="${code}" data-event="${e.id}"></canvas>
+            <span class="qrtap">Tap to present</span>
+          </button>
           <div style="min-width:0">
             <div class="pn">${esc(e.title)}</div>
             <div class="pt">${esc(i.name)} · Ticket ${n}</div>
@@ -804,8 +810,8 @@ function confirmView(){
       <button class="btn quiet" onclick="toast('Post-purchase account creation — exactly where it belongs.')">Create</button>
     </div>
     <div class="acctprompt"><span class="ai">🚪</span>
-      <div style="flex:1"><h4>Try the door scanner</h4>
-        <p>Open the check-in product and scan code <b>${o.num}-01</b> to see the host's side.</p></div>
+      <div style="flex:1"><h4>This QR works at the door</h4>
+        <p>Open <b>Door check-in</b> on the organizer's phone, tap the QR above to enlarge it, and scan it with their camera.</p></div>
       <a class="btn quiet" href="checkin/">Open</a>
     </div>`:""}
 
@@ -817,21 +823,60 @@ function confirmView(){
     <div style="height:20px"></div>
   </div>`;
 }
-function drawQRs(){
-  document.querySelectorAll(".qrc").forEach(cv=>{
-    const ctx = cv.getContext("2d"), n=21, s=cv.width/n;
-    let h = 2166136261;
-    for(const c of cv.dataset.seed){ h^=c.charCodeAt(0); h=Math.imul(h,16777619) }
-    const rnd=()=>{ h^=h<<13; h^=h>>>17; h^=h<<5; return (h>>>0)/4294967296 };
-    ctx.fillStyle="#fff"; ctx.fillRect(0,0,cv.width,cv.height);
-    ctx.fillStyle="#141110";
-    for(let y=0;y<n;y++)for(let x=0;x<n;x++){
-      if((x<7&&y<7)||(x>=n-7&&y<7)||(x<7&&y>=n-7)) continue;
-      if(rnd()>0.52) ctx.fillRect(x*s,y*s,s,s);
-    }
-    const eye=(cx,cy)=>{ ctx.fillRect(cx,cy,7*s,7*s); ctx.fillStyle="#fff"; ctx.fillRect(cx+s,cy+s,5*s,5*s); ctx.fillStyle="#141110"; ctx.fillRect(cx+2*s,cy+2*s,3*s,3*s) };
-    eye(0,0); eye((n-7)*s,0); eye(0,(n-7)*s);
-  });
+async function drawQRs(){
+  for(const cv of document.querySelectorAll(".qrc")){
+    try{
+      const payload = await ticketPayload(cv.dataset.event, cv.dataset.code);
+      paintQR(cv, payload, 4);
+    }catch(e){ /* non-secure context fallback: leave canvas blank */ }
+  }
+}
+function paintQR(cv, payload, scale){
+  const qr = qrcode(0, "M"); qr.addData(payload); qr.make();
+  const n = qr.getModuleCount(), quiet = 4;
+  const size = (n + quiet*2) * scale;
+  cv.width = size; cv.height = size;
+  const ctx = cv.getContext("2d");
+  ctx.fillStyle = "#fff"; ctx.fillRect(0,0,size,size);
+  ctx.fillStyle = "#141110";
+  for(let r=0;r<n;r++) for(let c=0;c<n;c++)
+    if(qr.isDark(r,c)) ctx.fillRect((c+quiet)*scale, (r+quiet)*scale, scale, scale);
+}
+async function showPass(code, evId){
+  const e = byId(evId);
+  let ov = el("passbig");
+  if(!ov){
+    ov = document.createElement("div"); ov.id = "passbig"; ov.className = "scrim-full passwrap";
+    ov.addEventListener("click", ev=>{ if(ev.target===ov) closePass() });
+    document.body.appendChild(ov);
+  }
+  document.body.style.overflow = "hidden";
+  ov.innerHTML = `<div class="bigpass" role="dialog" aria-modal="true" aria-label="Ticket QR">
+    <div class="bp-ev">${esc(e.title)}</div>
+    <div class="bp-sub">${e.date} · ${e.time} · ${esc(e.venue)}</div>
+    <canvas id="bigqr"></canvas>
+    <div class="bp-code">${esc(code)}</div>
+    <div class="bp-hint">Hold this up to the door scanner — brightness up helps</div>
+    <button class="btn dark block" onclick="closePass()">Done</button>
+  </div>`;
+  const payload = await ticketPayload(evId, code);
+  paintQR(el("bigqr"), payload, 10);
+}
+function closePass(){ el("passbig")?.remove(); document.body.style.overflow = "" }
+
+/* play reel/hero clips only while visible — kind to phone batteries */
+function wireVideos(){
+  const vids = document.querySelectorAll("video.reelvid, video.herovid");
+  if(window._vio) window._vio.disconnect();
+  if(!vids.length) return;
+  window._vio = new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      const v = en.target;
+      if(en.isIntersecting){ v.muted = true; const p = v.play(); if(p) p.catch(()=>{}) }
+      else v.pause();
+    });
+  }, {threshold: 0.25});
+  vids.forEach(v=>window._vio.observe(v));
 }
 
 /* ---------- boot ---------- */
