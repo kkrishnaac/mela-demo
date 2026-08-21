@@ -781,3 +781,26 @@ tr:last-child td{border-bottom:none}
 .authnote{font-size:11.5px; color:var(--ink-3); text-align:center; margin-top:18px; line-height:1.5;
   border-top:1px solid var(--line); padding-top:14px}
 .ownerout{margin-left:auto; font-size:13px; padding:8px 15px}
+
+/* ---------- door codes ---------- */
+.doorcard{display:flex; align-items:center; gap:12px; background:var(--surface); border:1.5px solid var(--ink);
+  border-radius:15px; padding:13px 15px; margin-bottom:10px}
+.dcname{font-weight:800; font-size:15px; letter-spacing:-.02em; line-height:1.25}
+.dcmeta{font-size:12px; color:var(--ink-3); margin-top:2px}
+.doorcode{margin-left:auto; flex:none; background:var(--ink); color:#fff; font-weight:800; font-size:15px;
+  letter-spacing:.12em; padding:8px 13px; border-radius:10px; font-variant-numeric:tabular-nums}
+.doorcode.sm{font-size:11px; padding:4px 8px; letter-spacing:.09em; margin-left:0}
+.doorsearch{width:100%; border:1.5px solid var(--line-2); border-radius:13px; padding:12px 14px;
+  background:var(--surface); outline:none; font-size:16px; font-weight:650; letter-spacing:.02em}
+.doorsearch:focus{border-color:var(--flame); box-shadow:0 0 0 3px var(--flame-tint)}
+.doorres{display:flex; flex-direction:column; gap:7px; margin-top:8px}
+.doorrow{display:flex; align-items:center; gap:11px; width:100%; background:var(--surface);
+  border:1px solid var(--line); border-radius:13px; padding:11px 13px; text-align:left}
+.doorrow:hover{border-color:var(--ink-3)}
+.drname{font-weight:700; font-size:13.5px; line-height:1.3; min-width:0}
+.drmeta{display:block; font-weight:600; font-size:11.5px; color:var(--ink-3); margin-top:1px}
+.doorempty{font-size:12.5px; color:var(--ink-3); padding:9px 2px}
+.doorcodebox{flex:none; text-align:center; background:var(--sunk); border-radius:14px; padding:11px 16px; max-width:220px}
+.doorcodebox .dcb-l{font-size:9.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3)}
+.doorcodebox .doorcode{margin:5px auto 6px; display:inline-block}
+.doorcodebox .dcb-h{font-size:10.5px; color:var(--ink-3); line-height:1.4}

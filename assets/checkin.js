@@ -189,7 +189,37 @@ function manual(){
   const v = el("mcode").value; if(!v.trim()) return;
   scan(v); el("mcode").value = "";
 }
-function setDoor(id){ doorEvent = id; save("ev_door", id); last = null; render() }
+function setDoor(id){ doorEvent = id; save("ev_door", id); last = null; render(); }
+function doorSearch(q, commit){
+  const box = el("doorres"); if(!box) return;
+  q = (q||"").trim();
+  if(!q){ box.innerHTML = ""; return }
+  const Q = q.toUpperCase();
+  const exact = EVENTS.find(e=>e.door === Q);
+  if(exact){
+    setDoor(exact.id);
+    toast("Scanner assigned via code " + exact.door + " — " + exact.title);
+    return;
+  }
+  const ql = q.toLowerCase();
+  const hits = EVENTS.filter(e=>e.verified &&
+    (e.door.startsWith(Q) || e.title.toLowerCase().includes(ql) ||
+     e.city.toLowerCase().includes(ql) || e.venue.toLowerCase().includes(ql))).slice(0,6);
+  if(!hits.length){
+    box.innerHTML = `<div class="doorempty">No event matches “${esc(q)}”. Check the door code with the organizer.</div>`;
+    return;
+  }
+  if(commit && hits.length === 1){
+    setDoor(hits[0].id);
+    toast("Scanner assigned — " + hits[0].title);
+    return;
+  }
+  box.innerHTML = hits.map(e=>`
+    <button class="doorrow" onclick="setDoor('${e.id}'); toast('Scanner assigned — ${esc(e.title).replace(/'/g,"\\'")}')">
+      <span class="doorcode sm">${esc(e.door)}</span>
+      <span class="drname">${esc(e.title)}<span class="drmeta">${e.date} · ${esc(e.city)}</span></span>
+    </button>`).join("");
+}
 function resetDoor(){
   scans = {...SEED}; save("ev_checkins", scans); last = null; qi = 0; render();
   toast("Door reset — seeded guests restored");
@@ -218,12 +248,21 @@ function render(){
     </div>
 
     <div class="ckdoorsel">
-      <label class="rslabel" for="doorsel" style="margin:0">Scanner assigned to</label>
-      <select id="doorsel" class="doorsel" onchange="setDoor(this.value)">
-        ${EVENTS.filter(e=>e.verified).map(e=>
-          `<option value="${e.id}" ${doorEvent===e.id?"selected":""}>${esc(e.title)} — ${e.date}, ${esc(e.city)}</option>`).join("")}
-      </select>
-      <div class="ps" style="margin:6px 0 0">Only a QR issued for <b>this</b> event turns the light green — everything else is turned away.</div>
+      <div class="rslabel" style="margin:0 0 8px">Scanner assigned to</div>
+      <div class="doorcard">
+        <div style="min-width:0">
+          <div class="dcname">${esc(ev.title)}</div>
+          <div class="dcmeta">${ev.date} · ${esc(ev.venue)}, ${esc(ev.city)}</div>
+        </div>
+        <span class="doorcode" title="This event's door code">${esc(ev.door)}</span>
+      </div>
+      <div class="doorfind">
+        <input id="doorq" class="doorsearch" placeholder="Switch event — enter door code (e.g. GARBA) or name"
+          autocapitalize="characters" autocomplete="off" aria-label="Find event by door code or name"
+          oninput="doorSearch(this.value)" onkeydown="if(event.key==='Enter')doorSearch(this.value,true)">
+      </div>
+      <div id="doorres" class="doorres"></div>
+      <div class="ps" style="margin:8px 0 0">Every event has a short <b>door code</b> — the organizer finds it on their dashboard and gives it to door staff. Only a QR issued for <b>this</b> event turns the light green.</div>
     </div>
 
     <div class="scanner ${K||""} ${busy?"busy":""}">

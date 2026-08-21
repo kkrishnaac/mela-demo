@@ -4,7 +4,7 @@
 
 const EVENTS = [
   {
-    id:"food-fest", title:"Toronto Summer Food Festival",
+    id:"food-fest", door:"FEAST", title:"Toronto Summer Food Festival",
     cat:"Food & Drink", tags:["trending","weekend","food"], trending:true, video:true, vlen:"0:12",
     dateShort:"SAT, AUG 30", date:"Sat, Aug 30", time:"4:00 PM", timeRange:"4:00 PM – 11:00 PM", doors:"Gates at 3:30 PM",
     venue:"Nathan Phillips Square", area:"Downtown", addr:"100 Queen St W, Toronto, ON M5H 2N2", km:1.8,
@@ -30,7 +30,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"garba-night", title:"Navratri Garba & Dandiya Raas Night",
+    id:"garba-night", door:"GARBA", title:"Navratri Garba & Dandiya Raas Night",
     cat:"Festivals", tags:["trending","weekend","music"], trending:true, video:true, vlen:"0:12",
     dateShort:"SAT, OCT 17", date:"Sat, Oct 17", time:"7:00 PM", timeRange:"7:00 PM – 1:00 AM", doors:"Doors at 6 PM",
     venue:"Paramount EventSpace", area:"Woodbridge", addr:"222 Rowntree Dairy Rd, Woodbridge, ON L4L 9T2", km:24.5,
@@ -57,7 +57,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"night-bazaar", title:"Kensington Market Night Bazaar",
+    id:"night-bazaar", door:"BAZAAR", title:"Kensington Market Night Bazaar",
     cat:"Markets", tags:["trending","weekend","free","food","different"], trending:true, video:true, vlen:"0:11",
     dateShort:"FRI, AUG 21", date:"Fri, Aug 21", time:"6:00 PM", timeRange:"6:00 PM – 12:00 AM", doors:"Streets close at 5:30 PM",
     venue:"Kensington Market", area:"Downtown", addr:"Augusta Ave, Toronto, ON M5T 2L7", km:2.1,
@@ -82,7 +82,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"rooftop-sunset", title:"Rooftop Sunset Sessions: House & Disco",
+    id:"rooftop-sunset", door:"ROOFTOP", title:"Rooftop Sunset Sessions: House & Disco",
     cat:"Nightlife", tags:["trending","weekend","music","different"], trending:true, video:true, vlen:"0:11",
     dateShort:"SAT, AUG 22", date:"Sat, Aug 22", time:"5:00 PM", timeRange:"5:00 PM – 11:00 PM", doors:"19+ · ID required",
     venue:"Lavelle Rooftop", area:"King West", addr:"627 King St W, Toronto, ON M5V 1M5", km:3.2,
@@ -108,7 +108,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"diwali-mela", title:"Diwali Mela at Exhibition Place",
+    id:"diwali-mela", door:"MELA", title:"Diwali Mela at Exhibition Place",
     cat:"Festivals", tags:["free","family","food"], video:true, vlen:"0:12",
     dateShort:"SUN, NOV 8", date:"Sun, Nov 8", time:"12:00 PM", timeRange:"12:00 PM – 9:00 PM", doors:"Gates at 11:30 AM",
     venue:"Exhibition Place, Hall B", area:"Liberty Village", addr:"100 Princes' Blvd, Toronto, ON M6K 3C3", km:4.4,
@@ -133,7 +133,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"afrobeats", title:"Afrobeats & Amapiano Night",
+    id:"afrobeats", door:"AFRO", title:"Afrobeats & Amapiano Night",
     cat:"Nightlife", tags:["weekend","music"], video:true, vlen:"0:11",
     dateShort:"SAT, AUG 29", date:"Sat, Aug 29", time:"10:00 PM", timeRange:"10:00 PM – 3:00 AM", doors:"19+ · ID required",
     venue:"Nest Toronto", area:"Little Italy", addr:"423 College St, Toronto, ON M5T 1T1", km:2.6,
@@ -159,7 +159,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"islands-kite", title:"Toronto Islands Kite Festival",
+    id:"islands-kite", door:"KITE", title:"Toronto Islands Kite Festival",
     cat:"Family", tags:["weekend","free","family","different"],
     dateShort:"SUN, AUG 23", date:"Sun, Aug 23", time:"11:00 AM", timeRange:"11:00 AM – 5:00 PM", doors:"Ferries from 10 AM",
     venue:"Centre Island Beach", area:"Toronto Islands", addr:"Centre Island, Toronto, ON M5J 2E9", km:5.6,
@@ -184,7 +184,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"desi-standup", title:"Log Kya Kahenge? — A Desi Stand-Up Night",
+    id:"desi-standup", door:"LOGKYA", title:"Log Kya Kahenge? — A Desi Stand-Up Night",
     cat:"Comedy", tags:["weekend","comedy"],
     dateShort:"FRI, SEP 11", date:"Fri, Sep 11", time:"8:00 PM", timeRange:"8:00 PM – 10:30 PM", doors:"Doors at 7:15 PM",
     venue:"Comedy Bar Danforth", area:"Danforth", addr:"2800 Danforth Ave, Toronto, ON M4C 1M1", km:7.8,
@@ -209,7 +209,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"silent-disco", title:"Silent Disco in Trinity Bellwoods",
+    id:"silent-disco", door:"SILENT", title:"Silent Disco in Trinity Bellwoods",
     cat:"Nightlife", tags:["weekend","different","music"], video:true, vlen:"0:10",
     dateShort:"SAT, AUG 22", date:"Sat, Aug 22", time:"8:00 PM", timeRange:"8:00 PM – 11:30 PM", doors:"Headphones from 7:45 PM",
     venue:"Trinity Bellwoods Park", area:"West End", addr:"790 Queen St W, Toronto, ON M6J 1G3", km:3.0,
@@ -234,7 +234,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"punjabi-wave", title:"Punjabi Wave: Live in Concert",
+    id:"punjabi-wave", door:"WAVE", title:"Punjabi Wave: Live in Concert",
     cat:"Music", tags:["music"],
     dateShort:"FRI, NOV 20", date:"Fri, Nov 20", time:"8:00 PM", timeRange:"8:00 PM – 11:30 PM", doors:"Doors at 7 PM",
     venue:"Rebel Toronto", area:"Waterfront", addr:"11 Polson St, Toronto, ON M5A 1A4", km:4.9,
@@ -260,7 +260,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"ramen-crawl", title:"Ramen & Sake Crawl",
+    id:"ramen-crawl", door:"RAMEN", title:"Ramen & Sake Crawl",
     cat:"Food & Drink", tags:["food","different"],
     dateShort:"THU, AUG 27", date:"Thu, Aug 27", time:"6:30 PM", timeRange:"6:30 PM – 10:00 PM", doors:"Meet at first stop 6:15 PM",
     venue:"Starts at Kinton Ramen", area:"Baldwin Village", addr:"51 Baldwin St, Toronto, ON M5T 1L1", km:2.3,
@@ -285,7 +285,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"cricket-final", title:"IND vs PAK Final — Big Screen Watch Party",
+    id:"cricket-final", door:"CRICKET", title:"IND vs PAK Final — Big Screen Watch Party",
     cat:"Sports", tags:["today","trending"], trending:true,
     dateShort:"TODAY", date:"Today", time:"3:30 PM", timeRange:"3:30 PM – 8:00 PM", doors:"First ball 4 PM",
     venue:"The Rec Room Roundhouse", area:"Downtown", addr:"255 Bremner Blvd, Toronto, ON M5V 3M9", km:2.9,
@@ -310,7 +310,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"chai-verse", title:"Chai & Verse: Open Mic Night",
+    id:"chai-verse", door:"CHAI", title:"Chai & Verse: Open Mic Night",
     cat:"Arts & Culture", tags:["today","free","different"],
     dateShort:"TODAY", date:"Today", time:"6:30 PM", timeRange:"6:30 PM – 9:00 PM", doors:"Sign-up at 6 PM",
     venue:"Bampot Tea House", area:"Harbord Village", addr:"201 Harbord St, Toronto, ON M5S 1H6", km:2.7,
@@ -335,7 +335,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"kids-science", title:"Kids' Science Carnival",
+    id:"kids-science", door:"SCIENCE", title:"Kids' Science Carnival",
     cat:"Family", tags:["weekend","family"],
     dateShort:"SUN, AUG 23", date:"Sun, Aug 23", time:"10:00 AM", timeRange:"10:00 AM – 4:00 PM", doors:"Doors at 9:45 AM",
     venue:"Ontario Science Centre", area:"Don Mills", addr:"770 Don Mills Rd, North York, ON M3C 1T3", km:11.2,
@@ -360,7 +360,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"qawwali-night", title:"Sufi Night: Qawwali Under the Stars",
+    id:"qawwali-night", door:"SUFI", title:"Sufi Night: Qawwali Under the Stars",
     cat:"Arts & Culture", tags:["music","different"], video:true, vlen:"0:12",
     dateShort:"SAT, SEP 26", date:"Sat, Sep 26", time:"7:30 PM", timeRange:"7:30 PM – 10:30 PM", doors:"Doors at 6:45 PM",
     venue:"Aga Khan Museum Courtyard", area:"North York", addr:"77 Wynford Dr, North York, ON M3C 1K1", km:12.8,
@@ -385,7 +385,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"street-feast", title:"Little Italy Street Feast",
+    id:"street-feast", door:"STREET", title:"Little Italy Street Feast",
     cat:"Food & Drink", tags:["weekend","food","family"],
     dateShort:"SAT, SEP 5", date:"Sat, Sep 5", time:"12:00 PM", timeRange:"12:00 PM – 10:00 PM", doors:"Street closes at 11 AM",
     venue:"College St, Little Italy", area:"Little Italy", addr:"College St at Clinton, Toronto, ON M6G 1B1", km:3.4,
@@ -410,7 +410,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"late-laughs", title:"Late Night Laughs: Comedy Showcase",
+    id:"late-laughs", door:"LAUGHS", title:"Late Night Laughs: Comedy Showcase",
     cat:"Comedy", tags:["weekend","comedy"],
     dateShort:"FRI, AUG 21", date:"Fri, Aug 21", time:"9:30 PM", timeRange:"9:30 PM – 11:30 PM", doors:"19+ · Doors at 9 PM",
     venue:"The Rivoli", area:"Queen West", addr:"334 Queen St W, Toronto, ON M5V 2A2", km:2.8,
@@ -435,7 +435,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"vinyl-flea", title:"Vintage & Vinyl Flea Market",
+    id:"vinyl-flea", door:"VINYL", title:"Vintage & Vinyl Flea Market",
     cat:"Markets", tags:["weekend","free","different"],
     dateShort:"SUN, AUG 23", date:"Sun, Aug 23", time:"11:00 AM", timeRange:"11:00 AM – 6:00 PM", doors:"Early bird from 10 AM",
     venue:"The Symes", area:"Stockyards", addr:"150 Symes Rd, Toronto, ON M6N 0A8", km:8.9,
@@ -460,7 +460,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"sunrise-yoga", title:"Sunrise Yoga + Chai on the Beach",
+    id:"sunrise-yoga", door:"SUNRISE", title:"Sunrise Yoga + Chai on the Beach",
     cat:"Wellness", tags:["weekend","different","family"],
     dateShort:"SUN, AUG 23", date:"Sun, Aug 23", time:"6:30 AM", timeRange:"6:30 AM – 8:30 AM", doors:"Mats out at 6:15 AM",
     venue:"Woodbine Beach", area:"The Beaches", addr:"1675 Lake Shore Blvd E, Toronto, ON M4L 3W6", km:9.4,
@@ -485,7 +485,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"kathak-tabla", title:"Kathak & Tabla: An Evening of Classics",
+    id:"kathak-tabla", door:"KATHAK", title:"Kathak & Tabla: An Evening of Classics",
     cat:"Arts & Culture", tags:["family","different"],
     dateShort:"SUN, OCT 4", date:"Sun, Oct 4", time:"5:00 PM", timeRange:"5:00 PM – 7:30 PM", doors:"Doors at 4:30 PM",
     venue:"Harbourfront Centre Theatre", area:"Waterfront", addr:"231 Queens Quay W, Toronto, ON M5J 2G8", km:3.7,
@@ -510,7 +510,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"bollywood-y2k", title:"Bollywood Night: Y2K Edition (19+)",
+    id:"bollywood-y2k", door:"Y2K", title:"Bollywood Night: Y2K Edition (19+)",
     cat:"Nightlife", tags:["today","weekend","music"],
     dateShort:"SAT, AUG 22", date:"Sat, Aug 22", time:"10:00 PM", timeRange:"10:00 PM – 3:00 AM", doors:"19+ · ID required",
     venue:"Nest Toronto", area:"Little Italy", addr:"423 College St, Toronto, ON M5T 1T1", km:2.6,
@@ -536,7 +536,7 @@ const EVENTS = [
     ]
   },
   {
-    id:"harbour-cruise", title:"Sunset Harbour Cruise & Dinner",
+    id:"harbour-cruise", door:"CRUISE", title:"Sunset Harbour Cruise & Dinner",
     cat:"Food & Drink", tags:["weekend","food","different"],
     dateShort:"FRI, SEP 4", date:"Fri, Sep 4", time:"6:30 PM", timeRange:"6:30 PM – 9:30 PM", doors:"Boarding from 6 PM",
     venue:"Harbourfront Pier 6", area:"Waterfront", addr:"235 Queens Quay W, Toronto, ON M5J 2G8", km:3.8,
@@ -622,7 +622,7 @@ const REGIONS = [
 
 const CANADA = [
   {
-    id:"granville-buskers", title:"Granville Island Buskers Weekend",
+    id:"granville-buskers", door:"BUSKERS", title:"Granville Island Buskers Weekend",
     cat:"Festivals", tags:["weekend","free","family","different"], city:"Vancouver", prov:"BC",
     dateShort:"SAT, AUG 29", date:"Sat, Aug 29", time:"11:00 AM", timeRange:"11:00 AM – 8:00 PM", doors:"Pitches open at 11 AM",
     venue:"Granville Island Public Market", area:"False Creek", addr:"1669 Johnston St, Vancouver, BC V6H 3R9", km:3363,
@@ -645,7 +645,7 @@ const CANADA = [
     tiers:[{name:"Free RSVP", desc:"Helps the organizers plan crowd flow", price:0}],
   },
   {
-    id:"prairie-lights", title:"Prairie Lights Winter Carnival",
+    id:"prairie-lights", door:"PRAIRIE", title:"Prairie Lights Winter Carnival",
     cat:"Festivals", tags:["weekend","free","family"], city:"Winnipeg", prov:"MB",
     dateShort:"SAT, NOV 21", date:"Sat, Nov 21", time:"4:00 PM", timeRange:"4:00 PM – 10:00 PM", doors:"Grounds open 3:30 PM",
     venue:"The Forks", area:"Downtown", addr:"1 Forks Market Rd, Winnipeg, MB R3C 4L9", km:2113,
@@ -668,7 +668,7 @@ const CANADA = [
     tiers:[{name:"Free RSVP", desc:"No ticket needed — RSVP for updates", price:0}],
   },
   {
-    id:"old-port-lumiere", title:"Old Port Illuminations",
+    id:"old-port-lumiere", door:"LUMIERE", title:"Old Port Illuminations",
     cat:"Arts & Culture", tags:["weekend","free","family","different"], city:"Montreal", prov:"QC",
     dateShort:"FRI, OCT 2", date:"Fri, Oct 2", time:"7:00 PM", timeRange:"7:00 PM – 12:00 AM", doors:"Projections start at dusk",
     venue:"Vieux-Port de Montréal", area:"Old Montreal", addr:"333 Rue de la Commune O, Montréal, QC H2Y 2E2", km:504,
@@ -691,7 +691,7 @@ const CANADA = [
     tiers:[{name:"Free RSVP", desc:"Get the route map by email", price:0}],
   },
   {
-    id:"chuckwagon-breakfast", title:"Chuckwagon Kickoff Pancake Breakfast",
+    id:"chuckwagon-breakfast", door:"PANCAKE", title:"Chuckwagon Kickoff Pancake Breakfast",
     cat:"Festivals", tags:["free","family","food"], city:"Calgary", prov:"AB",
     dateShort:"SAT, SEP 12", date:"Sat, Sep 12", time:"7:00 AM", timeRange:"7:00 AM – 11:00 AM", doors:"Griddles on at 7 AM",
     venue:"Olympic Plaza", area:"Downtown", addr:"228 8 Ave SE, Calgary, AB T2G 0K9", km:2704,
@@ -714,7 +714,7 @@ const CANADA = [
     tiers:[{name:"Free RSVP", desc:"Helps volunteers plan batter volume", price:0}],
   },
   {
-    id:"halifax-waterfront", title:"Halifax Waterfront Buskers",
+    id:"halifax-waterfront", door:"WHARF", title:"Halifax Waterfront Buskers",
     cat:"Festivals", tags:["weekend","free","family"], city:"Halifax", prov:"NS",
     dateShort:"SUN, AUG 30", date:"Sun, Aug 30", time:"12:00 PM", timeRange:"12:00 PM – 9:00 PM", doors:"First show at noon",
     venue:"Halifax Waterfront Boardwalk", area:"Downtown", addr:"1655 Lower Water St, Halifax, NS B3J 1S3", km:1256,
@@ -737,7 +737,7 @@ const CANADA = [
     tiers:[{name:"Free RSVP", desc:"Get the show schedule by email", price:0}],
   },
   {
-    id:"nuit-lumiere-ott", title:"Nuit Lumière All-Night Art Walk",
+    id:"nuit-lumiere-ott", door:"NUIT", title:"Nuit Lumière All-Night Art Walk",
     cat:"Arts & Culture", tags:["weekend","free","different"], city:"Ottawa", prov:"ON",
     dateShort:"SAT, SEP 19", date:"Sat, Sep 19", time:"7:00 PM", timeRange:"7:00 PM – 3:00 AM", doors:"Runs all night",
     venue:"ByWard Market & Rideau Canal", area:"Downtown", addr:"55 ByWard Market Sq, Ottawa, ON K1N 9C3", km:352,
@@ -760,7 +760,7 @@ const CANADA = [
     tiers:[{name:"Free RSVP", desc:"Get the zone map and shuttle times", price:0}],
   },
   {
-    id:"bhangra-park", title:"Bhangra in the Park",
+    id:"bhangra-park", door:"BHANGRA", title:"Bhangra in the Park",
     cat:"Festivals", tags:["weekend","free","family","music"], city:"Surrey", prov:"BC",
     dateShort:"SUN, SEP 6", date:"Sun, Sep 6", time:"1:00 PM", timeRange:"1:00 PM – 8:00 PM", doors:"Gates at 12:30 PM",
     venue:"Holland Park", area:"Surrey Central", addr:"13428 Old Yale Rd, Surrey, BC V3T 0J3", km:3341,
@@ -783,7 +783,7 @@ const CANADA = [
     tiers:[{name:"Free RSVP", desc:"Helps organizers plan langar volume", price:0}],
   },
   {
-    id:"diwali-drive", title:"Diwali on the Drive",
+    id:"diwali-drive", door:"DIYA", title:"Diwali on the Drive",
     cat:"Festivals", tags:["free","family","food"], city:"Vancouver", prov:"BC",
     dateShort:"SAT, NOV 7", date:"Sat, Nov 7", time:"3:00 PM", timeRange:"3:00 PM – 10:00 PM", doors:"Street closes at 2 PM",
     venue:"Commercial Drive", area:"East Vancouver", addr:"Commercial Dr at E 1st Ave, Vancouver, BC V5L 3W9", km:3363,
@@ -806,7 +806,7 @@ const CANADA = [
     tiers:[{name:"Free RSVP", desc:"Get the stage schedule by email", price:0}],
   },
   {
-    id:"island-carnival", title:"Island Carnival Grand Parade",
+    id:"island-carnival", door:"CARNIVAL", title:"Island Carnival Grand Parade",
     cat:"Festivals", tags:["weekend","free","family","music"], city:"Toronto", prov:"ON", km:6.2,
     dateShort:"SAT, AUG 29", date:"Sat, Aug 29", time:"10:00 AM", timeRange:"10:00 AM – 7:00 PM", doors:"Route opens 9 AM",
     venue:"Lake Shore Blvd W", area:"Exhibition", addr:"Lake Shore Blvd W, Toronto, ON M6K 3C3",
@@ -832,7 +832,7 @@ const CANADA = [
     ],
   },
   {
-    id:"warehouse-techno", title:"Warehouse: Techno All-Nighter",
+    id:"warehouse-techno", door:"TECHNO", title:"Warehouse: Techno All-Nighter",
     cat:"Nightlife", tags:["weekend","music","different"], city:"Vancouver", prov:"BC",
     dateShort:"SAT, SEP 26", date:"Sat, Sep 26", time:"10:00 PM", timeRange:"10:00 PM – 6:00 AM", doors:"19+ · ID required",
     venue:"Red Truck Warehouse", area:"Strathcona", addr:"295 E 1st Ave, Vancouver, BC V5T 1A7", km:3363,
@@ -857,7 +857,7 @@ const CANADA = [
     ],
   },
   {
-    id:"mtl-afterhours", title:"Afterhours: Basement Sessions",
+    id:"mtl-afterhours", door:"SOUSSOL", title:"Afterhours: Basement Sessions",
     cat:"Nightlife", tags:["weekend","music"], city:"Montreal", prov:"QC",
     dateShort:"SAT, SEP 12", date:"Sat, Sep 12", time:"11:00 PM", timeRange:"11:00 PM – 8:00 AM", doors:"18+ · ID required",
     venue:"Salle Sous-Sol", area:"Mile End", addr:"5445 Av de Gaspé, Montréal, QC H2T 3B2", km:504,
@@ -882,7 +882,7 @@ const CANADA = [
     ],
   },
   {
-    id:"edmonton-folk", title:"River Valley Folk Nights",
+    id:"edmonton-folk", door:"FOLK", title:"River Valley Folk Nights",
     cat:"Music", tags:["weekend","music","family"], city:"Edmonton", prov:"AB",
     dateShort:"FRI, SEP 4", date:"Fri, Sep 4", time:"6:00 PM", timeRange:"6:00 PM – 11:00 PM", doors:"Hill opens at 5 PM",
     venue:"Gallagher Park", area:"River Valley", addr:"9200 100 St NW, Edmonton, AB T6E 6E4", km:2698,
@@ -907,7 +907,7 @@ const CANADA = [
     ],
   },
   {
-    id:"mtl-comedy", title:"Montreal Comedy Marathon",
+    id:"mtl-comedy", door:"RIRE", title:"Montreal Comedy Marathon",
     cat:"Comedy", tags:["weekend","comedy"], city:"Montreal", prov:"QC",
     dateShort:"SAT, OCT 10", date:"Sat, Oct 10", time:"7:00 PM", timeRange:"7:00 PM – 1:00 AM", doors:"18+ · Doors at 6:30 PM",
     venue:"Théâtre Sainte-Catherine", area:"Quartier Latin", addr:"264 Rue Sainte-Catherine E, Montréal, QC H2X 1L4", km:504,
@@ -932,7 +932,7 @@ const CANADA = [
     ],
   },
   {
-    id:"punjabi-mela-yyc", title:"Punjabi Mela Calgary",
+    id:"punjabi-mela-yyc", door:"YYCMELA", title:"Punjabi Mela Calgary",
     cat:"Festivals", tags:["free","family","food","music"], city:"Calgary", prov:"AB",
     dateShort:"SUN, SEP 20", date:"Sun, Sep 20", time:"12:00 PM", timeRange:"12:00 PM – 9:00 PM", doors:"Gates at 11:30 AM",
     venue:"Genesis Centre", area:"Saddle Ridge", addr:"7555 Falconridge Blvd NE, Calgary, AB T3J 0C9", km:2704,
@@ -955,7 +955,7 @@ const CANADA = [
     tiers:[{name:"Free RSVP", desc:"Get the stage and kabaddi schedule", price:0}],
   },
   {
-    id:"victoria-fireworks", title:"Inner Harbour Fireworks Nights",
+    id:"victoria-fireworks", door:"SPARK", title:"Inner Harbour Fireworks Nights",
     cat:"Festivals", tags:["weekend","free","family","different"], city:"Victoria", prov:"BC",
     dateShort:"SAT, SEP 5", date:"Sat, Sep 5", time:"8:00 PM", timeRange:"8:00 PM – 10:30 PM", doors:"Harbour fills from 7 PM",
     venue:"Inner Harbour Causeway", area:"Downtown", addr:"812 Wharf St, Victoria, BC V8W 1T3", km:3327,
