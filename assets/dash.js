@@ -356,7 +356,8 @@ function platformView(){
     <div class="tablewrap"><table>
       <thead><tr><th>Event</th><th>Door code</th><th>Organizer</th><th>Date</th><th class="num">Sold</th><th class="num">Gross</th><th class="num">Your fee</th><th>Status</th></tr></thead>
       <tbody>${P.allEvents.map(r=>{
-        const evd = EVENTS.find(e=>e.title===r[0] || r[0].startsWith(e.title.slice(0,20)));
+        const stem = r[0].split(/[:—]/)[0].trim();
+        const evd = EVENTS.find(e=>e.title===r[0]) || EVENTS.find(e=>e.title.startsWith(stem));
         return `<tr><td class="nm">${esc(r[0])}</td><td>${evd?`<span class="doorcode sm">${esc(evd.door)}</span>`:"—"}</td><td>${esc(r[1])}</td><td>${r[2]}</td>
         <td class="num">${r[3]}</td><td class="num">${$$(r[4])}</td><td class="num"><b>${$$(r[5])}</b></td>
         <td><span class="statpill ${r[6]}">${({live:"Live",done:"Completed",soon:"Almost full",warn:"Slow sales"})[r[6]]}</span></td></tr>`}).join("")}</tbody>
