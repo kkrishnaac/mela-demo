@@ -688,3 +688,40 @@ tr:last-child td{border-bottom:none}
   .ckwrap{padding:34px 32px 70px}
   .ckhead h1{font-size:28px}
 }
+
+/* ---------- ticket sales monitor ---------- */
+.monitor .qhead{align-items:flex-start}
+.livedot{display:inline-flex; align-items:center; gap:5px; background:var(--flame-tint); color:var(--flame-deep);
+  font-size:10px; font-weight:800; letter-spacing:.09em; padding:3px 8px; border-radius:6px; vertical-align:middle; margin-left:6px}
+.livedot .pulse{background:var(--flame)}
+.monstats{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line);
+  border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:14px}
+.mstat{background:var(--surface); padding:12px 10px; text-align:center}
+.msv{font-size:19px; font-weight:800; letter-spacing:-.035em; font-variant-numeric:tabular-nums}
+.msl{font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase; letter-spacing:.07em; margin-top:2px}
+.monbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px}
+.monsearch{flex:1; min-width:200px; border:1.5px solid var(--line-2); border-radius:12px; padding:10px 13px;
+  background:var(--surface); outline:none; font-size:14px}
+.monsearch:focus{border-color:var(--flame); box-shadow:0 0 0 3px var(--flame-tint)}
+.monfilters{display:flex; gap:6px; flex-wrap:wrap}
+.monfilters .fpill{cursor:pointer}
+.montable tbody tr{cursor:pointer; transition:background .12s}
+.montable tbody tr:hover{background:var(--sunk)}
+.monrow.fresh{animation:flashin 4s ease-out}
+@keyframes flashin{0%{background:var(--flame-tint)}70%{background:var(--flame-tint)}100%{background:transparent}}
+.devtag{display:inline-block; margin-left:6px; background:var(--violet-tint); color:var(--violet);
+  font-size:9.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:2px 6px; border-radius:5px;
+  vertical-align:middle; white-space:nowrap}
+/* buyer detail sheet */
+.bsec{margin-bottom:18px}
+.bsl{font-size:10.5px; font-weight:800; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3);
+  margin-bottom:9px; padding-bottom:7px; border-bottom:1px solid var(--line)}
+.brow{display:flex; justify-content:space-between; gap:14px; align-items:center; padding:7px 0; font-size:13.5px}
+.brow span{color:var(--ink-2); flex:none}
+.brow b{text-align:right; font-weight:700; min-width:0; overflow-wrap:anywhere}
+.brow.tot{border-top:1px solid var(--line); margin-top:5px; padding-top:10px; font-size:15px}
+.brow.tot b{font-weight:800}
+.brow .mono{font-variant-numeric:tabular-nums; font-weight:700; color:var(--ink)}
+.bactions{display:flex; gap:8px; flex-wrap:wrap}
+.bactions .btn{flex:1; min-width:130px; padding:12px 14px; font-size:14px}
+@media (max-width:520px){ .monstats{grid-template-columns:1fr 1fr} }

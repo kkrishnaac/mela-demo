@@ -735,7 +735,10 @@ function placeOrder(){
   b.innerHTML = `<span class="spin"></span> ${t.total===0?"Reserving…":"Paying…"}`;
   setTimeout(()=>{
     const e = byId(cart.id);
-    const num = "NB-" + String(48210 + state.orders.length*173);
+    /* monotonic across the device, so a cleared order list never reissues a
+       number an old check-in record still points at */
+    const seq = load("ev_seq", 0) + 1; save("ev_seq", seq);
+    const num = "NB-" + String(48210 + seq*173);
     const order = {num, eventId:cart.id, name, email, total:t.total, face:t.face, fees:t.fees,
       last4, brand, status:"confirmed",
       items: e.tiers.map((tr,i)=>({name:tr.name, qty:cart.qty[i]})).filter(x=>x.qty>0)};

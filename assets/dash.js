@@ -248,6 +248,8 @@ function platformView(){
     <div class="tile"><div class="tl">Events / organizers</div><div class="tv">${P.events} <small>/ ${P.organizers}</small></div><div class="td">${P.live} events live now</div></div>
   </div>
 
+  <div id="monitor">${monitorPanel()}</div>
+
   <div class="panel">
     <div class="qhead">
       <div><h3>Verification queue</h3>
@@ -361,4 +363,200 @@ function decide(i, action){
     ? `<span class="statpill live">Approved &amp; published</span>`
     : `<span class="statpill soon">Held — organizer notified</span>`;
   toast(action==="approve" ? "Event approved — now visible to attendees" : "Held for more information");
+}
+
+/* ============ live buyer monitor (platform owner) ============
+   Who bought what, across every organizer, as it happens.
+   Real orders placed in the consumer app on this device appear at the top. */
+const MON = {live:true, q:"", filter:"all", feed:null, fresh:new Set(), tick:null, qi:0, seq:0};
+
+function seedFeed(){
+  MON.feed = PLATFORM.buyers.map(b=>({...b, source:"demo"}));
+}
+/* orders actually bought in the consumer app on this device */
+function deviceOrders(){
+  const cxl = cancelled();
+  return load("ev_orders", []).map((o,i)=>{
+    const ev = EVENTS.find(e=>e.id===o.eventId) || {};
+    const qty = o.items.reduce((s,it)=>s+it.qty,0);
+    const checked = load("ev_checkins",{});
+    const anyScanned = Object.keys(checked).some(c=>c.startsWith(o.num+"-"));
+    return {
+      num:o.num, name:o.name || "Guest", email:o.email || "—", phone:"—",
+      eventId:o.eventId, org:(ev.org&&ev.org.name)||"—", city:ev.city||"—",
+      qty, tier:o.items.map(it=>it.name).join(", "),
+      face:o.face ?? 0, fees:o.fees ?? 0,
+      method:o.last4 ? `${o.brand} •••• ${o.last4}` : "Free — no payment",
+      mins:i, source:"device",
+      status: o.status==="refunded" ? "refunded"
+            : cxl.includes(o.eventId) ? "refunded"
+            : anyScanned ? "checkedin" : "paid",
+    };
+  });
+}
+function feedRows(){
+  if(!MON.feed) seedFeed();
+  const rows = [...deviceOrders(), ...MON.feed];
+  const q = MON.q.trim().toLowerCase();
+  return rows.filter(r=>{
+    if(MON.filter!=="all" && r.status!==MON.filter) return false;
+    if(!q) return true;
+    const ev = EVENTS.find(e=>e.id===r.eventId);
+    return (r.name+" "+r.email+" "+r.num+" "+r.org+" "+r.city+" "+(ev?ev.title:"")).toLowerCase().includes(q);
+  });
+}
+const ago = m => m<1 ? "just now" : m<60 ? m+" min ago" : Math.floor(m/60)+" hr ago";
+const total = r => r.face + r.fees;
+
+function monitorPanel(){
+  const rows = feedRows();
+  const all = (MON.feed||[]).concat(deviceOrders());
+  const paid = all.filter(r=>r.status!=="refunded");
+  const revenue = paid.reduce((s,r)=>s+total(r),0);
+  const tickets = paid.reduce((s,r)=>s+r.qty,0);
+  const avg = paid.length ? revenue/paid.length : 0;
+  const FILTERS = [["all","All"],["paid","Paid"],["checkedin","Checked in"],["refunded","Refunded"]];
+  return `
+  <div class="panel monitor">
+    <div class="qhead">
+      <div>
+        <h3>Ticket sales monitor ${MON.live?`<span class="livedot"><span class="pulse"></span>LIVE</span>`:`<span class="statpill done">Paused</span>`}</h3>
+        <div class="ps">Every ticket bought across your platform, as it happens — who bought it, what they paid, and whether they've walked through the door.</div>
+      </div>
+      <button class="btn quiet" onclick="toggleLive()">${MON.live?"Pause feed":"Resume feed"}</button>
+    </div>
+
+    <div class="monstats">
+      <div class="mstat"><div class="msv">${all.length}</div><div class="msl">Orders</div></div>
+      <div class="mstat"><div class="msv">${tickets}</div><div class="msl">Tickets</div></div>
+      <div class="mstat"><div class="msv">${$$(revenue)}</div><div class="msl">Collected</div></div>
+      <div class="mstat"><div class="msv">${$(avg)}</div><div class="msl">Avg order</div></div>
+    </div>
+
+    <div class="monbar">
+      <input class="monsearch" id="monq" value="${esc(MON.q)}" placeholder="Search buyer, email, order or event…"
+        aria-label="Search buyers" oninput="MON.q=this.value; paintMonitor(true)">
+      <div class="monfilters">
+        ${FILTERS.map(([k,l])=>`<button class="fpill${MON.filter===k?" on":""}" onclick="MON.filter='${k}'; paintMonitor()">${l}</button>`).join("")}
+      </div>
+    </div>
+
+    <div class="tablewrap">
+      <table class="montable">
+        <thead><tr><th>Buyer</th><th>Event</th><th>Organizer</th><th class="num">Tickets</th><th class="num">Paid</th><th>Method</th><th>Status</th><th class="num">When</th></tr></thead>
+        <tbody>
+          ${rows.length ? rows.map(r=>{
+            const ev = EVENTS.find(e=>e.id===r.eventId) || {title:"—"};
+            const st = r.status==="checkedin" ? `<span class="statpill live">Checked in</span>`
+                     : r.status==="refunded"  ? `<span class="statpill warn">Refunded</span>`
+                     : `<span class="statpill soon">Paid</span>`;
+            return `<tr class="monrow${MON.fresh.has(r.num)?" fresh":""}" onclick="openBuyer('${r.num}')" tabindex="0"
+              onkeydown="if(event.key==='Enter')openBuyer('${r.num}')">
+              <td class="nm">${esc(r.name)}${r.source==="device"?`<span class="devtag">this device</span>`:""}
+                <div class="lsub">${esc(r.email)}</div></td>
+              <td class="nm" style="min-width:170px">${esc(ev.title)}<div class="lsub">${esc(r.city)}</div></td>
+              <td>${esc(r.org)}</td>
+              <td class="num">${r.qty}</td>
+              <td class="num">${total(r)===0?"Free":$(total(r))}</td>
+              <td>${esc(r.method)}</td>
+              <td>${st}</td>
+              <td class="num">${ago(r.mins)}</td>
+            </tr>`;
+          }).join("")
+          : `<tr><td colspan="8" style="color:var(--ink-3);padding:22px 9px">No orders match that search.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+    <div class="ps" style="margin-top:12px">Showing ${rows.length} of ${all.length} orders · click any row for the full order.
+      <b>Buyer contact details are personal information</b> — under PIPEDA the real build should log every access here and restrict it to staff who need it.</div>
+  </div>`;
+}
+
+function paintMonitor(keepFocus){
+  const host = el("monitor"); if(!host) return;
+  const sel = keepFocus ? document.activeElement === el("monq") : false;
+  const pos = sel ? el("monq").selectionStart : null;
+  host.innerHTML = monitorPanel();
+  if(sel){ const i = el("monq"); i.focus(); if(pos!==null) i.setSelectionRange(pos,pos) }
+}
+function toggleLive(){
+  MON.live = !MON.live;
+  if(MON.live) startMonitor(); else clearInterval(MON.tick);
+  paintMonitor();
+}
+function startMonitor(){
+  if(!MON.feed) seedFeed();
+  clearInterval(MON.tick);
+  MON.tick = setInterval(()=>{
+    const src = PLATFORM.incoming[MON.qi % PLATFORM.incoming.length]; MON.qi++;
+    MON.seq++;
+    const order = {...src, num:"NB-"+(49100+MON.seq*7), mins:0, status:"paid", source:"demo"};
+    MON.feed.forEach(r=>r.mins += 1);
+    MON.feed.unshift(order);
+    MON.fresh.add(order.num);
+    setTimeout(()=>{ MON.fresh.delete(order.num) }, 4000);
+    paintMonitor(true);
+  }, 6000);
+}
+
+function openBuyer(num){
+  const r = feedRows().find(x=>x.num===num) || deviceOrders().find(x=>x.num===num); if(!r) return;
+  const ev = EVENTS.find(e=>e.id===r.eventId) || {};
+  const checked = load("ev_checkins",{});
+  const codes = Array.from({length:r.qty},(_,i)=>{
+    const code = `${r.num}-${String(i+1).padStart(2,"0")}`;
+    const used = checked[code] ? checked[code].at : (r.status==="checkedin" ? "at the door" : null);
+    return {code, used};
+  });
+  let ov = el("sheet");
+  if(!ov){ ov = document.createElement("div"); ov.id="sheet"; ov.className="scrim-full";
+    ov.addEventListener("click", e=>{ if(e.target===ov) closeSheet() }); document.body.appendChild(ov) }
+  document.body.style.overflow="hidden";
+  ov.innerHTML = `
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Order detail">
+    <div class="shead"><div class="grabber"></div>
+      <div class="sheadrow"><div style="flex:1;min-width:0">
+        <div class="st">${esc(r.name)}</div>
+        <div class="sd">Order ${esc(r.num)} · ${ago(r.mins)}</div></div>
+        <button class="iconbtn" style="width:32px;height:32px" onclick="closeSheet()" aria-label="Close">✕</button>
+      </div>
+    </div>
+    <div class="sbody">
+      <div class="bsec">
+        <div class="bsl">Buyer</div>
+        <div class="brow"><span>Name</span><b>${esc(r.name)}</b></div>
+        <div class="brow"><span>Email</span><b>${esc(r.email)}</b></div>
+        <div class="brow"><span>Phone</span><b>${esc(r.phone)}</b></div>
+        <div class="brow"><span>Account</span><b>Guest checkout</b></div>
+      </div>
+      <div class="bsec">
+        <div class="bsl">What they bought</div>
+        <div class="brow"><span>Event</span><b>${esc(ev.title||"—")}</b></div>
+        <div class="brow"><span>Organizer</span><b>${esc(r.org)}</b></div>
+        <div class="brow"><span>When &amp; where</span><b>${esc(ev.date||"—")} · ${esc(ev.city||r.city)}</b></div>
+        <div class="brow"><span>Tickets</span><b>${r.qty} × ${esc(r.tier)}</b></div>
+      </div>
+      <div class="bsec">
+        <div class="bsl">Payment</div>
+        <div class="brow"><span>Ticket price</span><b>${r.face===0?"Free":$(r.face)}</b></div>
+        <div class="brow"><span>Service fees</span><b>${r.fees===0?"—":$(r.fees)}</b></div>
+        <div class="brow tot"><span>Total charged</span><b>${total(r)===0?"Free":$(total(r))}</b></div>
+        <div class="brow"><span>Method</span><b>${esc(r.method)}</b></div>
+        <div class="brow"><span>Status</span><b>${r.status==="refunded"?"Refunded":r.status==="checkedin"?"Paid · checked in":"Paid"}</b></div>
+      </div>
+      <div class="bsec">
+        <div class="bsl">Tickets issued</div>
+        ${codes.map(c=>`<div class="brow"><span class="mono">${esc(c.code)}</span>
+          ${c.used?`<span class="statpill live">Scanned ${esc(c.used)}</span>`:`<span class="statpill done">Not scanned</span>`}</div>`).join("")}
+      </div>
+      <div class="testnote">Actions here are simulated. In the real build these call Stripe and your mail provider directly.</div>
+    </div>
+    <div class="sfoot">
+      <div class="bactions">
+        <button class="btn quiet" onclick="toast('Tickets re-sent to ${esc(r.email)}')">Resend tickets</button>
+        <button class="btn quiet" onclick="toast('Opens your mail client in the real build')">Contact buyer</button>
+        ${r.status!=="refunded"?`<button class="btn danger" onclick="toast('Refund of ${total(r)===0?"$0.00":$(total(r))} would be issued through Stripe')">Refund order</button>`:""}
+      </div>
+    </div>
+  </div>`;
 }
