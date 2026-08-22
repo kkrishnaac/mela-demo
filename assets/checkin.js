@@ -244,7 +244,8 @@ function render(){
         <h1>${esc(ev.title)}</h1>
         <div class="cksub">${ev.date} · ${esc(ev.venue)}, ${esc(ev.city)}</div>
       </div>
-      <div class="ckcount"><div class="ckn">${inDoor}</div><div class="ckl">checked in</div></div>
+      <div class="ckcount"><div class="ckn">${inDoor}</div><div class="ckl">checked in</div>
+        <button class="btn quiet cksignout" onclick="authLogout('organizer')">Sign out</button></div>
     </div>
 
     <div class="ckdoorsel">
@@ -345,6 +346,13 @@ function render(){
 }
 const _render0 = render;
 render = function(){ _render0(); attachCam() };
-if(typeof hydrateSubmissions==="function") hydrateSubmissions();
-if(!Object.keys(scans).length){ scans = {...SEED}; save("ev_checkins", scans) }
-render();
+
+/* Boot target for the auth gate (see assets/auth.js). The scanner signs in
+   with the organizer account — door staff are the organizer or their staff.
+   Previously this page had no gate at all and exposed the door log, which
+   contains guest names. (security/golive/2026-08-22-NOGO.md, T46) */
+function mountCheckin(){
+  if(typeof hydrateSubmissions==="function") hydrateSubmissions();
+  if(!Object.keys(scans).length){ scans = {...SEED}; save("ev_checkins", scans) }
+  render();
+}

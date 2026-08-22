@@ -1,2 +1,13 @@
 # Internal — never publish to the public Pages site
 SECURITY-PROTOCOL.md
+
+# Secrets — never commit (T2: gate finding, pre-emptive for the backend)
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# OS noise
+.DS_Store
