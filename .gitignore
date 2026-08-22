@@ -11,3 +11,7 @@ node_modules/
 
 # OS noise
 .DS_Store
+
+# Security reports — internal only. Never publish: they document live exploits.
+security/
+HANDOFF.md
