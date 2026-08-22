@@ -1,0 +1,4 @@
+# This is a demonstration environment with simulated events and payments.
+# It must not appear in search results for the brand.
+User-agent: *
+Disallow: /
