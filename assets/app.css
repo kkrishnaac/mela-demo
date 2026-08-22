@@ -852,3 +852,26 @@ tr:last-child td{border-bottom:none}
 
 /* sign-out control on the door scanner */
 .cksignout{display:block; margin-top:8px; padding:6px 12px; font-size:12px; border-radius:9px}
+
+/* ---------- persistent demo banner ----------
+   Public-facing warning so nobody mistakes the demo for a live ticketing
+   service once it sits on the client's real domain. Deliberately not
+   dismissible. */
+:root{ --bannerh:28px; }
+.demobanner{
+  position:fixed; top:0; left:0; right:0; z-index:60;
+  background:var(--ink); color:#fff;
+  font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
+  text-align:center; line-height:1; padding:8px 12px;
+  height:var(--bannerh); white-space:nowrap; overflow:hidden;
+}
+.demobanner .bshort{display:none}
+body{ padding-top:var(--bannerh); }
+.topbar{ top:var(--bannerh); }          /* sticky header sits below the banner */
+.backbar{ top:var(--bannerh); }
+/* keep it to a single line on narrow phones */
+@media (max-width:560px){
+  .demobanner{font-size:10px; letter-spacing:.03em}
+  .demobanner .bfull{display:none}
+  .demobanner .bshort{display:inline}
+}
